@@ -123,10 +123,7 @@ END;
 GO
 
 -- The warranty status changes with the date, so it is calculated when read.
-IF OBJECT_ID(N'dbo.vwBaoHanh', N'V') IS NULL
-    EXEC(N'CREATE VIEW dbo.vwBaoHanh AS SELECT MaPhieu FROM dbo.BaoHanh');
-GO
-ALTER VIEW dbo.vwBaoHanh AS
+CREATE OR ALTER VIEW dbo.vwBaoHanh AS
 SELECT MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, NgayMua, ThoiHan,
        NgayHetHan,
        CASE WHEN NgayHetHan >= CONVERT(DATE, GETDATE())
@@ -136,10 +133,7 @@ FROM dbo.BaoHanh;
 GO
 
 -- Revenue counts completed orders only; canceled and pending orders contribute zero.
-IF OBJECT_ID(N'dbo.vwDoanhThuNgay', N'V') IS NULL
-    EXEC(N'CREATE VIEW dbo.vwDoanhThuNgay AS SELECT NgayDat FROM dbo.DonHang');
-GO
-ALTER VIEW dbo.vwDoanhThuNgay AS
+CREATE OR ALTER VIEW dbo.vwDoanhThuNgay AS
 SELECT NgayDat AS Ngay,
        COUNT(*) AS SoDon,
        SUM(CASE WHEN TrangThai = N'Hoàn thành' THEN 1 ELSE 0 END) AS HoanThanh,
