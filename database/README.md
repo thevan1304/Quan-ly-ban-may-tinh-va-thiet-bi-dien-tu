@@ -1,6 +1,6 @@
 # Cơ sở dữ liệu
 
-Project dùng SQL Server Express. Trong SQL Server Management Studio, kết nối đến `LAPTOP-AV3JDPH0\SQLEXPRESS` (như ảnh), bấm **New Query**, mở file `01_schema.sql` rồi bấm **Execute**. Script tự tạo database `QuanLyBanMayTinh` nếu chưa có, nên bạn không cần tạo database trống trước.
+Project dùng SQL Server. Trong SQL Server Management Studio, kết nối đến SQL Server trên máy của bạn (ví dụ `TÊN_MÁY_CỦA_BẠN\SQLEXPRESS`), bấm **New Query**, mở file `01_schema.sql` rồi bấm **Execute**. Script tự tạo database `QuanLyBanMayTinh` nếu chưa có, nên bạn không cần tạo database trống trước.
 
 Nếu muốn tự tạo database trống bằng giao diện SSMS: nhấp phải **Databases** → **New Database...** → nhập `QuanLyBanMayTinh` → **OK**. Sau đó vẫn chạy `01_schema.sql` để tạo các bảng và view. Script có thể chạy lại mà không xóa dữ liệu hiện có.
 
