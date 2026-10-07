@@ -124,6 +124,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
+            Database.DeleteSelected(dgvDonHang, "đơn hàng",
+                "DELETE FROM dbo.DonHang WHERE MaDonHang = @Ma", TaiDanhSach);
         }
 
         private void btnLamMoi_Click(object sender, EventArgs e)

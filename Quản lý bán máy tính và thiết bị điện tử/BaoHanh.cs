@@ -104,7 +104,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-
+            Database.DeleteSelected(dgvBaoHanh, "phiếu bảo hành",
+                "DELETE FROM dbo.BaoHanh WHERE MaPhieu = @Ma", TaiDanhSach);
         }
 
         private void btnLamMoi_Click(object sender, EventArgs e)

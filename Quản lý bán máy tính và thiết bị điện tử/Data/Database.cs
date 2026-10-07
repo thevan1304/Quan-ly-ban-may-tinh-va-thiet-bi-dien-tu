@@ -68,6 +68,59 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data
             return "Không thể lưu " + item + ": " + error.Message;
         }
 
+        internal static void DeleteSelected(DataGridView grid, string item, string sql, Action reload)
+        {
+            if (grid.SelectedRows.Count != 1 || grid.SelectedRows[0].IsNewRow)
+            {
+                MessageBox.Show("Hãy chọn một " + item + " trong danh sách để xóa.",
+                    "Chưa chọn dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                grid.Focus();
+                return;
+            }
+
+            string code = Convert.ToString(grid.SelectedRows[0].Cells[0].Value);
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                MessageBox.Show("Không tìm thấy mã " + item + " được chọn.",
+                    "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (MessageBox.Show("Bạn có chắc muốn xóa " + item + " có mã " + code + "?",
+                "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+                return;
+
+            int deleted;
+            try
+            {
+                deleted = Execute(sql,
+                    parameters => parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = code);
+            }
+            catch (SqlException error)
+            {
+                string message = error.Number == 547
+                    ? "Không thể xóa " + item + " vì đang được sử dụng ở dữ liệu khác."
+                    : "Không thể xóa " + item + ": " + error.Message;
+                MessageBox.Show(message, "Lỗi xóa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể xóa " + item + ": " + error.Message,
+                    "Lỗi xóa dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            reload();
+            MessageBox.Show(deleted == 0
+                    ? "Dữ liệu đã không còn trong database. Danh sách đã được cập nhật."
+                    : "Đã xóa " + item + ".",
+                deleted == 0 ? "Thông báo" : "Thành công",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         internal static SqlConnection OpenConnection()
         {
             ConnectionStringSettings setting = ConfigurationManager.ConnectionStrings["QuanLyBanMayTinh"];

@@ -17,6 +17,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
             ChonMenu(mnuSanPham);
             btnThem.Click += btnThem_Click;
+            btnXoa.Click += btnXoa_Click;
             Shown += (sender, args) => TaiDuLieuSanPham();
         }
 
@@ -327,6 +328,12 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 MessageBox.Show("Không thể tải danh mục: " + error.Message, "Lỗi dữ liệu",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void btnXoa_Click(object sender, EventArgs e)
+        {
+            Database.DeleteSelected(dgvSanPham, "sản phẩm",
+                "DELETE FROM dbo.SanPham WHERE MaSanPham = @Ma", TaiDanhSachSanPham);
         }
 
         private void TaiDanhSachSanPham()
