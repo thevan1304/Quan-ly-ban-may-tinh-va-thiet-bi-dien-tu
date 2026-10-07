@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Data;
+using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
 namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 {
@@ -8,10 +10,112 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         public DonHang()
         {
             InitializeComponent();
+            numThanhTien.Enabled = false;
+            numTongTien.ValueChanged += (sender, args) => CapNhatThanhTien();
+            numGiamGia.ValueChanged += (sender, args) => CapNhatThanhTien();
+            cboTrangThai.SelectedIndex = 0;
+            CapNhatThanhTien();
+            Load += (sender, args) => TaiDanhSach();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            string maDon, khachHang, soDienThoai, maGiamGia, ghiChu;
+            if (!InputValidation.Required(txtMaDon, "mã đơn", 30, out maDon)
+                || !InputValidation.Required(txtKhachHang, "tên khách hàng", 150, out khachHang)
+                || !InputValidation.Optional(txtSoDienThoai, "số điện thoại", 20, out soDienThoai)
+                || !InputValidation.Optional(txtMaGiamGia, "mã giảm giá", 30, out maGiamGia)
+                || !InputValidation.Optional(txtGhiChu, "ghi chú", 500, out ghiChu))
+                return;
+
+            if (numTongTien.Value <= 0)
+            {
+                InputValidation.Invalid(numTongTien, "Tổng tiền phải lớn hơn 0.");
+                return;
+            }
+
+            if (numGiamGia.Value > numTongTien.Value)
+            {
+                InputValidation.Invalid(numGiamGia, "Giảm giá không được lớn hơn tổng tiền.");
+                return;
+            }
+
+            string trangThai = cboTrangThai.SelectedItem as string;
+            if (string.IsNullOrEmpty(trangThai))
+            {
+                InputValidation.Invalid(cboTrangThai, "Vui lòng chọn trạng thái đơn hàng.");
+                return;
+            }
+
+            try
+            {
+                Database.Execute(
+                    "INSERT INTO dbo.DonHang " +
+                    "(MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, MaGiamGia, GiamGia, TrangThai, GhiChu) " +
+                    "VALUES (@MaDon, @KhachHang, @SoDienThoai, @NgayDat, @TongTien, @MaGiamGia, @GiamGia, @TrangThai, @GhiChu)",
+                    parameters =>
+                    {
+                        parameters.Add("@MaDon", SqlDbType.NVarChar, 30).Value = maDon;
+                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 150).Value = khachHang;
+                        parameters.Add("@SoDienThoai", SqlDbType.NVarChar, 20).Value =
+                            soDienThoai.Length == 0 ? (object)DBNull.Value : soDienThoai;
+                        parameters.Add("@NgayDat", SqlDbType.Date).Value = dtpNgayDat.Value.Date;
+                        var total = parameters.Add("@TongTien", SqlDbType.Decimal);
+                        total.Precision = 18;
+                        total.Scale = 2;
+                        total.Value = numTongTien.Value;
+                        parameters.Add("@MaGiamGia", SqlDbType.NVarChar, 30).Value =
+                            maGiamGia.Length == 0 ? (object)DBNull.Value : maGiamGia;
+                        var discount = parameters.Add("@GiamGia", SqlDbType.Decimal);
+                        discount.Precision = 18;
+                        discount.Scale = 2;
+                        discount.Value = numGiamGia.Value;
+                        parameters.Add("@TrangThai", SqlDbType.NVarChar, 30).Value = trangThai;
+                        parameters.Add("@GhiChu", SqlDbType.NVarChar, 500).Value =
+                            ghiChu.Length == 0 ? (object)DBNull.Value : ghiChu;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(Database.SaveError(error, "đơn hàng"), "Lỗi lưu dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            txtMaDon.Clear();
+            txtKhachHang.Clear();
+            txtSoDienThoai.Clear();
+            dtpNgayDat.Value = DateTime.Today;
+            numTongTien.Value = 0;
+            txtMaGiamGia.Clear();
+            numGiamGia.Value = 0;
+            cboTrangThai.SelectedIndex = 0;
+            txtGhiChu.Clear();
+            CapNhatThanhTien();
+            TaiDanhSach();
+            MessageBox.Show("Đã thêm đơn hàng.", "Thành công",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            txtMaDon.Focus();
+        }
+
+        private void CapNhatThanhTien()
+        {
+            numThanhTien.Value = Math.Max(0, numTongTien.Value - numGiamGia.Value);
+        }
+
+        private void TaiDanhSach()
+        {
+            try
+            {
+                Database.LoadGrid(dgvDonHang,
+                    "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, " +
+                    "GiamGia, ThanhTien, TrangThai FROM dbo.DonHang ORDER BY NgayDat DESC, MaDonHang");
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tải đơn hàng: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnSua_Click(object sender, EventArgs e)

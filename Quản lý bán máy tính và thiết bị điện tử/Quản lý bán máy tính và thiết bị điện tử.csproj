@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Database.cs" />
+    <Compile Include="Data\InputValidation.cs" />
     <Compile Include="BaoHanh.cs">
       <SubType>Form</SubType>
     </Compile>

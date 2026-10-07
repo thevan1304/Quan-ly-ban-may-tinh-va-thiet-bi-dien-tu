@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Data;
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
+using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
 namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 {
@@ -14,6 +16,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             InitializeComponent();
 
             ChonMenu(mnuSanPham);
+            btnThem.Click += btnThem_Click;
+            Shown += (sender, args) => TaiDuLieuSanPham();
         }
 
         // LÀM NỔI BẬT MENU ĐANG ĐƯỢC CHỌN
@@ -52,6 +56,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             DongTrangDangMo();
 
             ChonMenu(mnuSanPham);
+            TaiDuLieuSanPham();
 
             // Không cần SetChildIndex.
             // Khi trang con đóng, giao diện Sản phẩm
@@ -252,7 +257,92 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             object sender,
             EventArgs e)
         {
+            string ma, ten;
+            decimal giaBan;
+            int soLuong;
+            if (!InputValidation.Required(txtMaSP, "mã sản phẩm", 30, out ma)
+                || !InputValidation.Required(txtTenSP, "tên sản phẩm", 200, out ten))
+                return;
 
+            string maDanhMuc = cboDanhMuc.SelectedValue as string;
+            if (string.IsNullOrEmpty(maDanhMuc))
+            {
+                InputValidation.Invalid(cboDanhMuc, "Vui lòng chọn danh mục.");
+                return;
+            }
+
+            if (!InputValidation.NonNegativeMoney(txtGiaBan, "Giá bán", out giaBan)
+                || !InputValidation.NonNegativeInt(txtSoLuong, "Số lượng", out soLuong))
+                return;
+
+            try
+            {
+                Database.Execute(
+                    "INSERT INTO dbo.SanPham (MaSanPham, TenSanPham, MaDanhMuc, GiaBan, SoLuong) " +
+                    "VALUES (@Ma, @Ten, @DanhMuc, @GiaBan, @SoLuong)",
+                    parameters =>
+                    {
+                        parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma;
+                        parameters.Add("@Ten", SqlDbType.NVarChar, 200).Value = ten;
+                        parameters.Add("@DanhMuc", SqlDbType.NVarChar, 30).Value = maDanhMuc;
+                        var price = parameters.Add("@GiaBan", SqlDbType.Decimal);
+                        price.Precision = 18;
+                        price.Scale = 2;
+                        price.Value = giaBan;
+                        parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(Database.SaveError(error, "sản phẩm"), "Lỗi lưu dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            txtMaSP.Clear();
+            txtTenSP.Clear();
+            cboDanhMuc.SelectedIndex = -1;
+            txtGiaBan.Clear();
+            txtSoLuong.Clear();
+            TaiDanhSachSanPham();
+            MessageBox.Show("Đã thêm sản phẩm.", "Thành công",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            txtMaSP.Focus();
+        }
+
+        private void TaiDuLieuSanPham()
+        {
+            try
+            {
+                DataTable danhMuc = Database.Query(
+                    "SELECT MaDanhMuc, TenDanhMuc FROM dbo.DanhMuc ORDER BY TenDanhMuc");
+                cboDanhMuc.DisplayMember = "TenDanhMuc";
+                cboDanhMuc.ValueMember = "MaDanhMuc";
+                cboDanhMuc.DataSource = danhMuc;
+                cboDanhMuc.SelectedIndex = -1;
+                TaiDanhSachSanPham();
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tải danh mục: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void TaiDanhSachSanPham()
+        {
+            try
+            {
+                Database.LoadGrid(dgvSanPham,
+                    "SELECT sp.MaSanPham, sp.TenSanPham, dm.TenDanhMuc, sp.GiaBan, sp.SoLuong " +
+                    "FROM dbo.SanPham sp JOIN dbo.DanhMuc dm ON dm.MaDanhMuc = sp.MaDanhMuc " +
+                    "ORDER BY sp.MaSanPham");
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tải sản phẩm: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
