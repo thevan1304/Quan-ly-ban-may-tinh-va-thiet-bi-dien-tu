@@ -265,8 +265,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             if (maSanPhamDangSua != null)
             {
-                MessageBox.Show("Hãy bấm Làm mới trước khi thêm sản phẩm mới.", "Đang sửa dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -381,8 +379,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             if (maSanPhamDangSua == null)
             {
-                MessageBox.Show("Hãy chọn sản phẩm cần sửa trong danh sách.", "Chưa chọn dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

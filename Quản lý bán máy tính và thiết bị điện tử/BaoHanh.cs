@@ -63,8 +63,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             if (maPhieuDangSua != null)
             {
-                MessageBox.Show("Hãy bấm Làm mới trước khi thêm phiếu bảo hành mới.", "Đang sửa dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -149,8 +147,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             if (maPhieuDangSua == null)
             {
-                MessageBox.Show("Hãy chọn phiếu bảo hành cần sửa trong danh sách.", "Chưa chọn dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
