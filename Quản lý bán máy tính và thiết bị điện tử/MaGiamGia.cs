@@ -12,7 +12,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         public MaGiamGia()
         {
             InitializeComponent();
-            btnSua.Enabled = false;
             dgvMaGiamGia.CellClick += dgvMaGiamGia_CellClick;
             Load += (sender, args) => TaiDanhSach();
         }
@@ -51,8 +50,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 txtGhiChu.Text = Convert.ToString(row["GhiChu"]);
                 maDangSua = ma;
                 txtMaGiamGia.ReadOnly = true;
-                btnThem.Enabled = false;
-                btnSua.Enabled = true;
             }
             catch (Exception error)
             {
@@ -63,6 +60,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            if (maDangSua != null)
+            {
+                MessageBox.Show("Hãy bấm Làm mới trước khi thêm mã giảm giá mới.", "Đang sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string ma, ten, ghiChu;
             if (!InputValidation.Required(txtMaGiamGia, "mã giảm giá", 30, out ma)
                 || !InputValidation.Required(txtTenChuongTrinh, "tên chương trình", 200, out ten)
@@ -287,8 +291,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             maDangSua = null;
             txtMaGiamGia.ReadOnly = false;
-            btnThem.Enabled = true;
-            btnSua.Enabled = false;
             txtMaGiamGia.Clear();
             txtTenChuongTrinh.Clear();
             cboLoaiGiam.SelectedIndex = -1;

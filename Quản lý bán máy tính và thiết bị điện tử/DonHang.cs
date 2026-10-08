@@ -17,7 +17,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             numGiamGia.ValueChanged += (sender, args) => CapNhatThanhTien();
             cboTrangThai.SelectedIndex = 0;
             CapNhatThanhTien();
-            btnSua.Enabled = false;
             dgvDonHang.CellClick += dgvDonHang_CellClick;
             Load += (sender, args) => TaiDanhSach();
         }
@@ -54,8 +53,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 CapNhatThanhTien();
                 maDonDangSua = ma;
                 txtMaDon.ReadOnly = true;
-                btnThem.Enabled = false;
-                btnSua.Enabled = true;
             }
             catch (Exception error)
             {
@@ -66,6 +63,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            if (maDonDangSua != null)
+            {
+                MessageBox.Show("Hãy bấm Làm mới trước khi thêm đơn hàng mới.", "Đang sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string maDon, khachHang, soDienThoai, maGiamGia, ghiChu;
             if (!InputValidation.Required(txtMaDon, "mã đơn", 30, out maDon)
                 || !InputValidation.Required(txtKhachHang, "tên khách hàng", 150, out khachHang)
@@ -256,8 +260,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             maDonDangSua = null;
             txtMaDon.ReadOnly = false;
-            btnThem.Enabled = true;
-            btnSua.Enabled = false;
             txtMaDon.Clear();
             txtKhachHang.Clear();
             txtSoDienThoai.Clear();

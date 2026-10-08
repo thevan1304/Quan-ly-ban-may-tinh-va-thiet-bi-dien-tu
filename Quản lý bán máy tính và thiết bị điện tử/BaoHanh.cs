@@ -17,7 +17,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             dtpNgayMua.ValueChanged += (sender, args) => CapNhatNgayHetHan();
             numThoiHan.ValueChanged += (sender, args) => CapNhatNgayHetHan();
             CapNhatNgayHetHan();
-            btnSua.Enabled = false;
             dgvBaoHanh.CellClick += dgvBaoHanh_CellClick;
             Load += (sender, args) => TaiDanhSach();
         }
@@ -52,8 +51,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 txtGhiChu.Text = Convert.ToString(row["GhiChu"]);
                 CapNhatNgayHetHan();
                 txtMaPhieu.ReadOnly = true;
-                btnThem.Enabled = false;
-                btnSua.Enabled = true;
             }
             catch (Exception error)
             {
@@ -64,6 +61,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            if (maPhieuDangSua != null)
+            {
+                MessageBox.Show("Hãy bấm Làm mới trước khi thêm phiếu bảo hành mới.", "Đang sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string maPhieu, maSanPham, khachHang, soDienThoai, ghiChu;
             if (!InputValidation.Required(txtMaPhieu, "mã phiếu", 30, out maPhieu)
                 || !InputValidation.Required(txtMaSanPham, "mã sản phẩm", 30, out maSanPham)
@@ -209,8 +213,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             maPhieuDangSua = null;
             txtMaPhieu.ReadOnly = false;
-            btnThem.Enabled = true;
-            btnSua.Enabled = false;
             txtMaPhieu.Clear();
             txtMaSanPham.Clear();
             txtTenKhachHang.Clear();

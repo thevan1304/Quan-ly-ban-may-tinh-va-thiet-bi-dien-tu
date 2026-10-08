@@ -22,7 +22,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             btnSua.Click += btnSua_Click;
             btnXoa.Click += btnXoa_Click;
             btnLamMoi.Click += btnLamMoi_Click;
-            btnSua.Enabled = false;
             dgvSanPham.CellClick += dgvSanPham_CellClick;
             Shown += (sender, args) => TaiDuLieuSanPham();
         }
@@ -264,6 +263,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             object sender,
             EventArgs e)
         {
+            if (maSanPhamDangSua != null)
+            {
+                MessageBox.Show("Hãy bấm Làm mới trước khi thêm sản phẩm mới.", "Đang sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string ma, ten;
             decimal giaBan;
             int soLuong;
@@ -363,8 +369,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 txtGiaBan.Text = ((decimal)row["GiaBan"]).ToString(CultureInfo.CurrentCulture);
                 txtSoLuong.Text = Convert.ToString(row["SoLuong"]);
                 txtMaSP.ReadOnly = true;
-                btnThem.Enabled = false;
-                btnSua.Enabled = true;
             }
             catch (Exception error)
             {
@@ -439,8 +443,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             maSanPhamDangSua = null;
             txtMaSP.ReadOnly = false;
-            btnThem.Enabled = true;
-            btnSua.Enabled = false;
             txtMaSP.Clear();
             txtTenSP.Clear();
             txtGiaBan.Clear();

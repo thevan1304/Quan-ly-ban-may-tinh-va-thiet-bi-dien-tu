@@ -12,7 +12,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         public DanhMuc()
         {
             InitializeComponent();
-            btnSua.Enabled = false;
             dgvDanhMuc.CellClick += dgvDanhMuc_CellClick;
             Load += (sender, args) => TaiDanhSach();
         }
@@ -41,8 +40,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 txtTenDanhMuc.Text = Convert.ToString(row["TenDanhMuc"]);
                 txtMoTa.Text = Convert.ToString(row["MoTa"]);
                 txtMaDanhMuc.ReadOnly = true;
-                btnThem.Enabled = false;
-                btnSua.Enabled = true;
             }
             catch (Exception error)
             {
@@ -53,6 +50,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            if (maDangSua != null)
+            {
+                MessageBox.Show("Hãy bấm Làm mới trước khi thêm danh mục mới.", "Đang sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string ma, ten, moTa;
             if (!InputValidation.Required(txtMaDanhMuc, "mã danh mục", 30, out ma)
                 || !InputValidation.Required(txtTenDanhMuc, "tên danh mục", 150, out ten)
@@ -156,8 +160,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             maDangSua = null;
             txtMaDanhMuc.ReadOnly = false;
-            btnThem.Enabled = true;
-            btnSua.Enabled = false;
             txtMaDanhMuc.Clear();
             txtTenDanhMuc.Clear();
             txtMoTa.Clear();
