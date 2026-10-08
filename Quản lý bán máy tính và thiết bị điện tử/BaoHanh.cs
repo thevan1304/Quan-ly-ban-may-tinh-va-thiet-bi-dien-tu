@@ -7,6 +7,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 {
     public partial class BaoHanh : Form
     {
+        private string maPhieuDangSua;
+
         public BaoHanh()
         {
             InitializeComponent();
@@ -15,7 +17,49 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             dtpNgayMua.ValueChanged += (sender, args) => CapNhatNgayHetHan();
             numThoiHan.ValueChanged += (sender, args) => CapNhatNgayHetHan();
             CapNhatNgayHetHan();
+            btnSua.Enabled = false;
+            dgvBaoHanh.CellClick += dgvBaoHanh_CellClick;
             Load += (sender, args) => TaiDanhSach();
+        }
+
+        private void dgvBaoHanh_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            string ma = Convert.ToString(dgvBaoHanh.Rows[e.RowIndex].Cells[0].Value);
+            try
+            {
+                DataTable result = Database.Query(
+                    "SELECT MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, NgayMua, ThoiHan, GhiChu " +
+                    "FROM dbo.BaoHanh WHERE MaPhieu = @Ma",
+                    parameters => parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma);
+                if (result.Rows.Count == 0)
+                {
+                    MessageBox.Show("Phiếu bảo hành này không còn trong database.", "Thông báo",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LamMoi();
+                    return;
+                }
+
+                DataRow row = result.Rows[0];
+                maPhieuDangSua = ma;
+                txtMaPhieu.Text = ma;
+                txtMaSanPham.Text = Convert.ToString(row["MaSanPham"]);
+                txtTenKhachHang.Text = Convert.ToString(row["TenKhachHang"]);
+                txtSoDienThoai.Text = Convert.ToString(row["SoDienThoai"]);
+                dtpNgayMua.Value = ((DateTime)row["NgayMua"]).Date;
+                numThoiHan.Value = (int)row["ThoiHan"];
+                txtGhiChu.Text = Convert.ToString(row["GhiChu"]);
+                CapNhatNgayHetHan();
+                txtMaPhieu.ReadOnly = true;
+                btnThem.Enabled = false;
+                btnSua.Enabled = true;
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể đọc phiếu bảo hành: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnThem_Click(object sender, EventArgs e)
@@ -99,18 +143,87 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnSua_Click(object sender, EventArgs e)
         {
+            if (maPhieuDangSua == null)
+            {
+                MessageBox.Show("Hãy chọn phiếu bảo hành cần sửa trong danh sách.", "Chưa chọn dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
+            string maSanPham, khachHang, soDienThoai, ghiChu;
+            if (!InputValidation.Required(txtMaSanPham, "mã sản phẩm", 30, out maSanPham)
+                || !InputValidation.Required(txtTenKhachHang, "tên khách hàng", 150, out khachHang)
+                || !InputValidation.Optional(txtSoDienThoai, "số điện thoại", 20, out soDienThoai)
+                || !InputValidation.Optional(txtGhiChu, "ghi chú", 500, out ghiChu))
+                return;
+
+            DateTime ngayMua = dtpNgayMua.Value.Date;
+            int thoiHan = (int)numThoiHan.Value;
+            DateTime ngayHetHan = ngayMua.AddMonths(thoiHan);
+            int updated;
+            try
+            {
+                updated = Database.Execute(
+                    "UPDATE dbo.BaoHanh SET MaSanPham = @MaSanPham, TenKhachHang = @KhachHang, " +
+                    "SoDienThoai = @SoDienThoai, NgayMua = @NgayMua, ThoiHan = @ThoiHan, " +
+                    "NgayHetHan = @NgayHetHan, GhiChu = @GhiChu WHERE MaPhieu = @MaPhieu",
+                    parameters =>
+                    {
+                        parameters.Add("@MaPhieu", SqlDbType.NVarChar, 30).Value = maPhieuDangSua;
+                        parameters.Add("@MaSanPham", SqlDbType.NVarChar, 30).Value = maSanPham;
+                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 150).Value = khachHang;
+                        parameters.Add("@SoDienThoai", SqlDbType.NVarChar, 20).Value =
+                            soDienThoai.Length == 0 ? (object)DBNull.Value : soDienThoai;
+                        parameters.Add("@NgayMua", SqlDbType.Date).Value = ngayMua;
+                        parameters.Add("@ThoiHan", SqlDbType.Int).Value = thoiHan;
+                        parameters.Add("@NgayHetHan", SqlDbType.Date).Value = ngayHetHan;
+                        parameters.Add("@GhiChu", SqlDbType.NVarChar, 500).Value =
+                            ghiChu.Length == 0 ? (object)DBNull.Value : ghiChu;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(Database.SaveError(error, "phiếu bảo hành"), "Lỗi sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            LamMoi();
+            MessageBox.Show(updated == 0 ? "Phiếu bảo hành đã không còn trong database." : "Đã sửa phiếu bảo hành.",
+                updated == 0 ? "Thông báo" : "Thành công",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
             Database.DeleteSelected(dgvBaoHanh, "phiếu bảo hành",
-                "DELETE FROM dbo.BaoHanh WHERE MaPhieu = @Ma", TaiDanhSach);
+                "DELETE FROM dbo.BaoHanh WHERE MaPhieu = @Ma", LamMoi);
         }
 
         private void btnLamMoi_Click(object sender, EventArgs e)
         {
+            LamMoi();
+        }
 
+        private void LamMoi()
+        {
+            maPhieuDangSua = null;
+            txtMaPhieu.ReadOnly = false;
+            btnThem.Enabled = true;
+            btnSua.Enabled = false;
+            txtMaPhieu.Clear();
+            txtMaSanPham.Clear();
+            txtTenKhachHang.Clear();
+            txtSoDienThoai.Clear();
+            dtpNgayMua.Value = DateTime.Today;
+            numThoiHan.Value = 12;
+            txtGhiChu.Clear();
+            txtTimMaPhieu.Clear();
+            txtTimMaSanPham.Clear();
+            txtTimKhachHang.Clear();
+            CapNhatNgayHetHan();
+            TaiDanhSach();
+            txtMaPhieu.Focus();
         }
 
         private void btnTimKiem_Click(object sender, EventArgs e)

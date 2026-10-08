@@ -7,6 +7,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 {
     public partial class DonHang : Form
     {
+        private string maDonDangSua;
+
         public DonHang()
         {
             InitializeComponent();
@@ -15,7 +17,51 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             numGiamGia.ValueChanged += (sender, args) => CapNhatThanhTien();
             cboTrangThai.SelectedIndex = 0;
             CapNhatThanhTien();
+            btnSua.Enabled = false;
+            dgvDonHang.CellClick += dgvDonHang_CellClick;
             Load += (sender, args) => TaiDanhSach();
+        }
+
+        private void dgvDonHang_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            string ma = Convert.ToString(dgvDonHang.Rows[e.RowIndex].Cells[0].Value);
+            try
+            {
+                DataTable result = Database.Query(
+                    "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, MaGiamGia, " +
+                    "GiamGia, TrangThai, GhiChu FROM dbo.DonHang WHERE MaDonHang = @Ma",
+                    parameters => parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma);
+                if (result.Rows.Count == 0)
+                {
+                    MessageBox.Show("Đơn hàng này không còn trong database.", "Thông báo",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LamMoi();
+                    return;
+                }
+
+                DataRow row = result.Rows[0];
+                txtMaDon.Text = ma;
+                txtKhachHang.Text = Convert.ToString(row["KhachHang"]);
+                txtSoDienThoai.Text = Convert.ToString(row["SoDienThoai"]);
+                dtpNgayDat.Value = ((DateTime)row["NgayDat"]).Date;
+                numTongTien.Value = (decimal)row["TongTien"];
+                txtMaGiamGia.Text = Convert.ToString(row["MaGiamGia"]);
+                numGiamGia.Value = (decimal)row["GiamGia"];
+                cboTrangThai.SelectedItem = Convert.ToString(row["TrangThai"]);
+                txtGhiChu.Text = Convert.ToString(row["GhiChu"]);
+                CapNhatThanhTien();
+                maDonDangSua = ma;
+                txtMaDon.ReadOnly = true;
+                btnThem.Enabled = false;
+                btnSua.Enabled = true;
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể đọc đơn hàng: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnThem_Click(object sender, EventArgs e)
@@ -120,16 +166,113 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnSua_Click(object sender, EventArgs e)
         {
+            if (maDonDangSua == null)
+            {
+                MessageBox.Show("Hãy chọn đơn hàng cần sửa trong danh sách.", "Chưa chọn dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string khachHang, soDienThoai, maGiamGia, ghiChu;
+            if (!InputValidation.Required(txtKhachHang, "tên khách hàng", 150, out khachHang)
+                || !InputValidation.Optional(txtSoDienThoai, "số điện thoại", 20, out soDienThoai)
+                || !InputValidation.Optional(txtMaGiamGia, "mã giảm giá", 30, out maGiamGia)
+                || !InputValidation.Optional(txtGhiChu, "ghi chú", 500, out ghiChu))
+                return;
+
+            if (numTongTien.Value <= 0)
+            {
+                InputValidation.Invalid(numTongTien, "Tổng tiền phải lớn hơn 0.");
+                return;
+            }
+
+            if (numGiamGia.Value > numTongTien.Value)
+            {
+                InputValidation.Invalid(numGiamGia, "Giảm giá không được lớn hơn tổng tiền.");
+                return;
+            }
+
+            string trangThai = cboTrangThai.SelectedItem as string;
+            if (string.IsNullOrEmpty(trangThai))
+            {
+                InputValidation.Invalid(cboTrangThai, "Vui lòng chọn trạng thái đơn hàng.");
+                return;
+            }
+
+            int updated;
+            try
+            {
+                updated = Database.Execute(
+                    "UPDATE dbo.DonHang SET KhachHang = @KhachHang, SoDienThoai = @SoDienThoai, " +
+                    "NgayDat = @NgayDat, TongTien = @TongTien, MaGiamGia = @MaGiamGia, " +
+                    "GiamGia = @GiamGia, TrangThai = @TrangThai, GhiChu = @GhiChu WHERE MaDonHang = @MaDon",
+                    parameters =>
+                    {
+                        parameters.Add("@MaDon", SqlDbType.NVarChar, 30).Value = maDonDangSua;
+                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 150).Value = khachHang;
+                        parameters.Add("@SoDienThoai", SqlDbType.NVarChar, 20).Value =
+                            soDienThoai.Length == 0 ? (object)DBNull.Value : soDienThoai;
+                        parameters.Add("@NgayDat", SqlDbType.Date).Value = dtpNgayDat.Value.Date;
+                        var total = parameters.Add("@TongTien", SqlDbType.Decimal);
+                        total.Precision = 18;
+                        total.Scale = 2;
+                        total.Value = numTongTien.Value;
+                        parameters.Add("@MaGiamGia", SqlDbType.NVarChar, 30).Value =
+                            maGiamGia.Length == 0 ? (object)DBNull.Value : maGiamGia;
+                        var discount = parameters.Add("@GiamGia", SqlDbType.Decimal);
+                        discount.Precision = 18;
+                        discount.Scale = 2;
+                        discount.Value = numGiamGia.Value;
+                        parameters.Add("@TrangThai", SqlDbType.NVarChar, 30).Value = trangThai;
+                        parameters.Add("@GhiChu", SqlDbType.NVarChar, 500).Value =
+                            ghiChu.Length == 0 ? (object)DBNull.Value : ghiChu;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(Database.SaveError(error, "đơn hàng"), "Lỗi sửa dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            LamMoi();
+            MessageBox.Show(updated == 0 ? "Đơn hàng đã không còn trong database." : "Đã sửa đơn hàng.",
+                updated == 0 ? "Thông báo" : "Thành công",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
             Database.DeleteSelected(dgvDonHang, "đơn hàng",
-                "DELETE FROM dbo.DonHang WHERE MaDonHang = @Ma", TaiDanhSach);
+                "DELETE FROM dbo.DonHang WHERE MaDonHang = @Ma", LamMoi);
         }
 
         private void btnLamMoi_Click(object sender, EventArgs e)
         {
+            LamMoi();
+        }
+
+        private void LamMoi()
+        {
+            maDonDangSua = null;
+            txtMaDon.ReadOnly = false;
+            btnThem.Enabled = true;
+            btnSua.Enabled = false;
+            txtMaDon.Clear();
+            txtKhachHang.Clear();
+            txtSoDienThoai.Clear();
+            dtpNgayDat.Value = DateTime.Today;
+            numTongTien.Value = 0;
+            txtMaGiamGia.Clear();
+            numGiamGia.Value = 0;
+            cboTrangThai.SelectedIndex = 0;
+            txtGhiChu.Clear();
+            txtTimMaDon.Clear();
+            txtTimKhachHang.Clear();
+            cboTimTrangThai.SelectedIndex = -1;
+            CapNhatThanhTien();
+            TaiDanhSach();
+            txtMaDon.Focus();
         }
 
         private void btnTimKiem_Click(object sender, EventArgs e)

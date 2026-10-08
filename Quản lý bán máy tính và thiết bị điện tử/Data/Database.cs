@@ -18,12 +18,15 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data
             }
         }
 
-        internal static DataTable Query(string sql)
+        internal static DataTable Query(string sql, Action<SqlParameterCollection> setParameters = null)
         {
             using (var connection = OpenConnection())
             using (var command = new SqlCommand(sql, connection))
             using (var adapter = new SqlDataAdapter(command))
             {
+                if (setParameters != null)
+                    setParameters(command.Parameters);
+
                 var result = new DataTable();
                 adapter.Fill(result);
                 return result;
