@@ -14,13 +14,14 @@
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DanhMuc));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DanhMuc));
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.tblHeader = new System.Windows.Forms.TableLayoutPanel();
             this.pnlHeaderContent = new System.Windows.Forms.Panel();
+            this.picDanhMuc = new System.Windows.Forms.PictureBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblSubTitle = new System.Windows.Forms.Label();
             this.tblMain = new System.Windows.Forms.TableLayoutPanel();
@@ -33,32 +34,31 @@
             this.lblMoTa = new System.Windows.Forms.Label();
             this.txtMoTa = new System.Windows.Forms.TextBox();
             this.pnlButtons = new System.Windows.Forms.Panel();
+            this.btnThem = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
+            this.btnSua = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
+            this.btnXoa = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
+            this.btnLamMoi = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.grpTimKiem = new System.Windows.Forms.GroupBox();
             this.lblTimMa = new System.Windows.Forms.Label();
             this.txtTimMa = new System.Windows.Forms.TextBox();
             this.lblTimTen = new System.Windows.Forms.Label();
             this.txtTimTen = new System.Windows.Forms.TextBox();
+            this.btnTimKiem = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.lblDanhSach = new System.Windows.Forms.Label();
             this.dgvDanhMuc = new System.Windows.Forms.DataGridView();
             this.colMaDanhMuc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTenDanhMuc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colMoTa = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.btnThem = new System.Windows.Forms.Button();
-            this.btnSua = new System.Windows.Forms.Button();
-            this.btnXoa = new System.Windows.Forms.Button();
-            this.btnLamMoi = new System.Windows.Forms.Button();
-            this.btnTimKiem = new System.Windows.Forms.Button();
-            this.picDanhMuc = new System.Windows.Forms.PictureBox();
             this.pnlHeader.SuspendLayout();
             this.tblHeader.SuspendLayout();
             this.pnlHeaderContent.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picDanhMuc)).BeginInit();
             this.tblMain.SuspendLayout();
             this.pnlContent.SuspendLayout();
             this.grpThongTin.SuspendLayout();
             this.pnlButtons.SuspendLayout();
             this.grpTimKiem.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDanhMuc)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picDanhMuc)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlHeader
@@ -99,6 +99,16 @@
             this.pnlHeaderContent.Name = "pnlHeaderContent";
             this.pnlHeaderContent.Size = new System.Drawing.Size(1150, 105);
             this.pnlHeaderContent.TabIndex = 0;
+            // 
+            // picDanhMuc
+            // 
+            this.picDanhMuc.Image = global::Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Properties.Resources.category;
+            this.picDanhMuc.Location = new System.Drawing.Point(10, 22);
+            this.picDanhMuc.Name = "picDanhMuc";
+            this.picDanhMuc.Size = new System.Drawing.Size(60, 60);
+            this.picDanhMuc.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.picDanhMuc.TabIndex = 0;
+            this.picDanhMuc.TabStop = false;
             // 
             // lblTitle
             // 
@@ -240,6 +250,62 @@
             this.pnlButtons.Size = new System.Drawing.Size(1130, 60);
             this.pnlButtons.TabIndex = 1;
             // 
+            // btnThem
+            // 
+            this.btnThem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(156)))), ((int)(((byte)(110)))));
+            this.btnThem.BorderRadius = 20;
+            this.btnThem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnThem.ForeColor = System.Drawing.Color.White;
+            this.btnThem.Image = ((System.Drawing.Image)(resources.GetObject("btnThem.Image")));
+            this.btnThem.Location = new System.Drawing.Point(100, 8);
+            this.btnThem.Name = "btnThem";
+            this.btnThem.Size = new System.Drawing.Size(210, 44);
+            this.btnThem.TabIndex = 0;
+            this.btnThem.Text = "   THÊM";
+            this.btnThem.Click += new System.EventHandler(this.btnThem_Click);
+            // 
+            // btnSua
+            // 
+            this.btnSua.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(125)))), ((int)(((byte)(190)))));
+            this.btnSua.BorderRadius = 20;
+            this.btnSua.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnSua.ForeColor = System.Drawing.Color.White;
+            this.btnSua.Image = ((System.Drawing.Image)(resources.GetObject("btnSua.Image")));
+            this.btnSua.Location = new System.Drawing.Point(340, 8);
+            this.btnSua.Name = "btnSua";
+            this.btnSua.Size = new System.Drawing.Size(210, 44);
+            this.btnSua.TabIndex = 1;
+            this.btnSua.Text = "   SỬA";
+            this.btnSua.Click += new System.EventHandler(this.btnSua_Click);
+            // 
+            // btnXoa
+            // 
+            this.btnXoa.BackColor = System.Drawing.Color.IndianRed;
+            this.btnXoa.BorderRadius = 20;
+            this.btnXoa.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnXoa.ForeColor = System.Drawing.Color.White;
+            this.btnXoa.Image = ((System.Drawing.Image)(resources.GetObject("btnXoa.Image")));
+            this.btnXoa.Location = new System.Drawing.Point(580, 8);
+            this.btnXoa.Name = "btnXoa";
+            this.btnXoa.Size = new System.Drawing.Size(210, 44);
+            this.btnXoa.TabIndex = 2;
+            this.btnXoa.Text = "   XÓA";
+            this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
+            // 
+            // btnLamMoi
+            // 
+            this.btnLamMoi.BackColor = System.Drawing.Color.Navy;
+            this.btnLamMoi.BorderRadius = 20;
+            this.btnLamMoi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnLamMoi.ForeColor = System.Drawing.Color.White;
+            this.btnLamMoi.Image = ((System.Drawing.Image)(resources.GetObject("btnLamMoi.Image")));
+            this.btnLamMoi.Location = new System.Drawing.Point(820, 8);
+            this.btnLamMoi.Name = "btnLamMoi";
+            this.btnLamMoi.Size = new System.Drawing.Size(210, 44);
+            this.btnLamMoi.TabIndex = 3;
+            this.btnLamMoi.Text = "   LÀM MỚI";
+            this.btnLamMoi.Click += new System.EventHandler(this.btnLamMoi_Click);
+            // 
             // grpTimKiem
             // 
             this.grpTimKiem.Controls.Add(this.lblTimMa);
@@ -293,6 +359,20 @@
             this.txtTimTen.Name = "txtTimTen";
             this.txtTimTen.Size = new System.Drawing.Size(360, 25);
             this.txtTimTen.TabIndex = 3;
+            // 
+            // btnTimKiem
+            // 
+            this.btnTimKiem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(7)))), ((int)(((byte)(156)))), ((int)(((byte)(170)))));
+            this.btnTimKiem.BorderRadius = 20;
+            this.btnTimKiem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnTimKiem.ForeColor = System.Drawing.Color.White;
+            this.btnTimKiem.Image = ((System.Drawing.Image)(resources.GetObject("btnTimKiem.Image")));
+            this.btnTimKiem.Location = new System.Drawing.Point(875, 25);
+            this.btnTimKiem.Name = "btnTimKiem";
+            this.btnTimKiem.Size = new System.Drawing.Size(220, 40);
+            this.btnTimKiem.TabIndex = 4;
+            this.btnTimKiem.Text = "   TÌM KIẾM";
+            this.btnTimKiem.Click += new System.EventHandler(this.btnTimKiem_Click);
             // 
             // lblDanhSach
             // 
@@ -372,101 +452,6 @@
             this.colMoTa.Name = "colMoTa";
             this.colMoTa.ReadOnly = true;
             // 
-            // btnThem
-            // 
-            this.btnThem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(156)))), ((int)(((byte)(110)))));
-            this.btnThem.FlatAppearance.BorderSize = 0;
-            this.btnThem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnThem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnThem.ForeColor = System.Drawing.Color.White;
-            this.btnThem.Image = ((System.Drawing.Image)(resources.GetObject("btnThem.Image")));
-            this.btnThem.Location = new System.Drawing.Point(100, 8);
-            this.btnThem.Name = "btnThem";
-            this.btnThem.Size = new System.Drawing.Size(210, 44);
-            this.btnThem.TabIndex = 0;
-            this.btnThem.Text = "   THÊM";
-            this.btnThem.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnThem.UseVisualStyleBackColor = false;
-            this.btnThem.Click += new System.EventHandler(this.btnThem_Click);
-            // 
-            // btnSua
-            // 
-            this.btnSua.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(125)))), ((int)(((byte)(190)))));
-            this.btnSua.FlatAppearance.BorderSize = 0;
-            this.btnSua.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSua.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnSua.ForeColor = System.Drawing.Color.White;
-            this.btnSua.Image = ((System.Drawing.Image)(resources.GetObject("btnSua.Image")));
-            this.btnSua.Location = new System.Drawing.Point(340, 8);
-            this.btnSua.Name = "btnSua";
-            this.btnSua.Size = new System.Drawing.Size(210, 44);
-            this.btnSua.TabIndex = 1;
-            this.btnSua.Text = "   SỬA";
-            this.btnSua.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnSua.UseVisualStyleBackColor = false;
-            this.btnSua.Click += new System.EventHandler(this.btnSua_Click);
-            // 
-            // btnXoa
-            // 
-            this.btnXoa.BackColor = System.Drawing.Color.IndianRed;
-            this.btnXoa.FlatAppearance.BorderSize = 0;
-            this.btnXoa.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnXoa.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnXoa.ForeColor = System.Drawing.Color.White;
-            this.btnXoa.Image = ((System.Drawing.Image)(resources.GetObject("btnXoa.Image")));
-            this.btnXoa.Location = new System.Drawing.Point(580, 8);
-            this.btnXoa.Name = "btnXoa";
-            this.btnXoa.Size = new System.Drawing.Size(210, 44);
-            this.btnXoa.TabIndex = 2;
-            this.btnXoa.Text = "   XÓA";
-            this.btnXoa.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnXoa.UseVisualStyleBackColor = false;
-            this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
-            // 
-            // btnLamMoi
-            // 
-            this.btnLamMoi.BackColor = System.Drawing.Color.Navy;
-            this.btnLamMoi.FlatAppearance.BorderSize = 0;
-            this.btnLamMoi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLamMoi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnLamMoi.ForeColor = System.Drawing.Color.White;
-            this.btnLamMoi.Image = ((System.Drawing.Image)(resources.GetObject("btnLamMoi.Image")));
-            this.btnLamMoi.Location = new System.Drawing.Point(820, 8);
-            this.btnLamMoi.Name = "btnLamMoi";
-            this.btnLamMoi.Size = new System.Drawing.Size(210, 44);
-            this.btnLamMoi.TabIndex = 3;
-            this.btnLamMoi.Text = "   LÀM MỚI";
-            this.btnLamMoi.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnLamMoi.UseVisualStyleBackColor = false;
-            this.btnLamMoi.Click += new System.EventHandler(this.btnLamMoi_Click);
-            // 
-            // btnTimKiem
-            // 
-            this.btnTimKiem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(7)))), ((int)(((byte)(156)))), ((int)(((byte)(170)))));
-            this.btnTimKiem.FlatAppearance.BorderSize = 0;
-            this.btnTimKiem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTimKiem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnTimKiem.ForeColor = System.Drawing.Color.White;
-            this.btnTimKiem.Image = ((System.Drawing.Image)(resources.GetObject("btnTimKiem.Image")));
-            this.btnTimKiem.Location = new System.Drawing.Point(875, 25);
-            this.btnTimKiem.Name = "btnTimKiem";
-            this.btnTimKiem.Size = new System.Drawing.Size(220, 40);
-            this.btnTimKiem.TabIndex = 4;
-            this.btnTimKiem.Text = "   TÌM KIẾM";
-            this.btnTimKiem.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnTimKiem.UseVisualStyleBackColor = false;
-            this.btnTimKiem.Click += new System.EventHandler(this.btnTimKiem_Click);
-            // 
-            // picDanhMuc
-            // 
-            this.picDanhMuc.Image = global::Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Properties.Resources.category;
-            this.picDanhMuc.Location = new System.Drawing.Point(10, 22);
-            this.picDanhMuc.Name = "picDanhMuc";
-            this.picDanhMuc.Size = new System.Drawing.Size(60, 60);
-            this.picDanhMuc.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.picDanhMuc.TabIndex = 0;
-            this.picDanhMuc.TabStop = false;
-            // 
             // DanhMuc
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -484,6 +469,7 @@
             this.tblHeader.ResumeLayout(false);
             this.pnlHeaderContent.ResumeLayout(false);
             this.pnlHeaderContent.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picDanhMuc)).EndInit();
             this.tblMain.ResumeLayout(false);
             this.pnlContent.ResumeLayout(false);
             this.pnlContent.PerformLayout();
@@ -493,7 +479,6 @@
             this.grpTimKiem.ResumeLayout(false);
             this.grpTimKiem.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDanhMuc)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.picDanhMuc)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -522,10 +507,10 @@
 
         private System.Windows.Forms.Panel pnlButtons;
 
-        private System.Windows.Forms.Button btnThem;
-        private System.Windows.Forms.Button btnSua;
-        private System.Windows.Forms.Button btnXoa;
-        private System.Windows.Forms.Button btnLamMoi;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnThem;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnSua;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnXoa;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnLamMoi;
 
         private System.Windows.Forms.GroupBox grpTimKiem;
 
@@ -535,7 +520,7 @@
         private System.Windows.Forms.Label lblTimTen;
         private System.Windows.Forms.TextBox txtTimTen;
 
-        private System.Windows.Forms.Button btnTimKiem;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnTimKiem;
 
         private System.Windows.Forms.Label lblDanhSach;
 
