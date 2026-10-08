@@ -26,7 +26,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             Shown += (sender, args) => TaiDuLieuSanPham();
         }
 
-        // LÀM NỔI BẬT MENU ĐANG ĐƯỢC CHỌN
         private void ChonMenu(ToolStripMenuItem item)
         {
             foreach (ToolStripItem menu in menuStrip1.Items)
@@ -42,7 +41,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             item.ForeColor = Color.White;
         }
 
-        // ĐÓNG TRANG CON ĐANG MỞ
         private void DongTrangDangMo()
         {
             if (trangDangMo != null)
@@ -56,20 +54,15 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
-        // QUAY LẠI TRANG SẢN PHẨM
         private void HienTrangSanPham()
         {
+            // Màn hình Sản phẩm nằm sẵn phía dưới và hiện lại khi Form con đóng.
             DongTrangDangMo();
 
             ChonMenu(mnuSanPham);
             LamMoiSanPham();
-
-            // Không cần SetChildIndex.
-            // Khi trang con đóng, giao diện Sản phẩm
-            // phía dưới sẽ tự hiện lại.
         }
 
-        // MỞ TRANG CON THEO TÊN CLASS
         private void MoTrang(
             string tenForm,
             ToolStripMenuItem menuDuocChon)
@@ -86,7 +79,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 Assembly.GetExecutingAssembly()
                         .GetType(tenDayDu);
 
-            // Form chưa được tạo
             if (loaiForm == null)
             {
                 MessageBox.Show(
@@ -102,7 +94,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 return;
             }
 
-            // Kiểm tra class có phải Windows Form
             if (!typeof(Form).IsAssignableFrom(loaiForm))
             {
                 MessageBox.Show(
@@ -121,7 +112,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 trangDangMo =
                     (Form)Activator.CreateInstance(loaiForm);
 
-                // Biến form thành trang con
                 trangDangMo.TopLevel = false;
 
                 trangDangMo.FormBorderStyle =
@@ -130,24 +120,21 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 trangDangMo.WindowState =
                     FormWindowState.Normal;
 
-                // Không Dock.Fill toàn bộ Form chính
+                // Giữ Form con dưới menu để không che thanh điều hướng.
                 trangDangMo.Dock = DockStyle.None;
 
-                // Form con bắt đầu ngay dưới menu
                 trangDangMo.Location =
                     new Point(
                         0,
                         tblMenu.Bottom
                     );
 
-                // Chiếm toàn bộ phần còn lại
                 trangDangMo.Size =
                     new Size(
                         this.ClientSize.Width,
                         this.ClientSize.Height - tblMenu.Bottom
                     );
 
-                // Tự co giãn cùng cửa sổ
                 trangDangMo.Anchor =
                     AnchorStyles.Top |
                     AnchorStyles.Bottom |
@@ -176,7 +163,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
-        // SẢN PHẨM
         private void mnuSanPham_Click(
             object sender,
             EventArgs e)
@@ -184,7 +170,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             HienTrangSanPham();
         }
 
-        // DANH MỤC
         private void mnuDanhMuc_Click(
             object sender,
             EventArgs e)
@@ -195,7 +180,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             );
         }
 
-        // PHIẾU BẢO HÀNH
         private void mnuBaoHanh_Click(
             object sender,
             EventArgs e)
@@ -206,7 +190,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             );
         }
 
-        // MÃ GIẢM GIÁ
         private void mnuMaGiamGia_Click(
             object sender,
             EventArgs e)
@@ -217,7 +200,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             );
         }
 
-        // ĐƠN HÀNG
         private void mnuDonHang_Click(
             object sender,
             EventArgs e)
@@ -228,7 +210,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             );
         }
 
-        // THỐNG KÊ DOANH THU
         private void mnuThongKe_Click(
             object sender,
             EventArgs e)
@@ -239,7 +220,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             );
         }
 
-        // THOÁT
         private void mnuThoat_Click(
             object sender,
             EventArgs e)
@@ -258,7 +238,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
-        // NÚT THÊM SẢN PHẨM
         private void btnThem_Click(
             object sender,
             EventArgs e)
