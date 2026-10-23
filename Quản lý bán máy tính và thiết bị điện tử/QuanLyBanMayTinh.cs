@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
@@ -22,6 +22,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             btnSua.Click += btnSua_Click;
             btnXoa.Click += btnXoa_Click;
             btnLamMoi.Click += btnLamMoi_Click;
+            btnTimKiem.Click += btnTimKiem_Click;
             dgvSanPham.CellClick += dgvSanPham_CellClick;
             Shown += (sender, args) => TaiDuLieuSanPham();
         }
@@ -434,6 +435,32 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 "DELETE FROM dbo.SanPham WHERE MaSanPham = @Ma", LamMoiSanPham);
         }
 
+        private void btnTimKiem_Click(object sender, EventArgs e)
+        {
+            string ma = txtTimMa.Text.Trim();
+            string ten = txtTimTen.Text.Trim();
+            try
+            {
+                Database.LoadGrid(dgvSanPham,
+                    "SELECT sp.MaSanPham, sp.TenSanPham, dm.TenDanhMuc, sp.GiaBan, sp.SoLuong " +
+                    "FROM dbo.SanPham sp JOIN dbo.DanhMuc dm ON dm.MaDanhMuc = sp.MaDanhMuc " +
+                    "WHERE ((@Ma = N'' AND @Ten = N'') " +
+                    "OR (@Ma <> N'' AND sp.MaSanPham = @Ma) " +
+                    "OR (@Ten <> N'' AND CHARINDEX(@Ten, sp.TenSanPham) > 0)) " +
+                    "ORDER BY sp.MaSanPham",
+                    parameters =>
+                    {
+                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
+                        parameters.Add("@Ten", SqlDbType.NVarChar, 4000).Value = ten;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tìm sản phẩm: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void TaiDanhSachSanPham()
         {
             try
@@ -448,6 +475,10 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 MessageBox.Show("Không thể tải sản phẩm: " + error.Message, "Lỗi dữ liệu",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private void btnXuatExcel_Click(object sender, EventArgs e)
+        {
+            ExcelExport.ExportGrid(dgvSanPham, "Sản phẩm", "Xuất danh sách sản phẩm", "Xuất danh sách sản phẩm");
         }
     }
 }

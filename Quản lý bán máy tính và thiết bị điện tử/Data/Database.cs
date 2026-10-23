@@ -33,9 +33,10 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data
             }
         }
 
-        internal static void LoadGrid(DataGridView grid, string sql)
+        internal static void LoadGrid(DataGridView grid, string sql,
+            Action<SqlParameterCollection> setParameters = null)
         {
-            DataTable data = Query(sql);
+            DataTable data = Query(sql, setParameters);
             if (data.Columns.Count != grid.Columns.Count)
             {
                 throw new InvalidOperationException("Số cột dữ liệu không khớp với danh sách hiển thị.");
