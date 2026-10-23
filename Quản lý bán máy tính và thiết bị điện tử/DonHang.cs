@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Data;
+using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
 namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
@@ -18,6 +19,9 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             cboTrangThai.SelectedIndex = 0;
             CapNhatThanhTien();
             dgvDonHang.CellClick += dgvDonHang_CellClick;
+            btnTimKiem.Click += btnTimKiem_Click;
+            txtTimMaDon.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemDonHang(); };
+            txtTimKhachHang.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemDonHang(); };
             Load += (sender, args) => TaiDanhSach();
         }
 
@@ -275,37 +279,197 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
-            string ma = txtTimMaDon.Text.Trim();
+            TimKiemDonHang();
+        }
+
+        private void btnXuatExcel_Click(object sender, EventArgs e)
+        {
+            int soDong = DemDongDonHang();
+            if (soDong == 0)
+            {
+                MessageBox.Show("Không có đơn hàng để xuất Excel.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Title = "Xuất danh sách đơn hàng";
+                dialog.Filter = "Tệp Excel (*.xlsx)|*.xlsx";
+                dialog.DefaultExt = "xlsx";
+                dialog.AddExtension = true;
+                dialog.FileName = "DanhSachDonHang_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    XuatDanhSachExcel(dialog.FileName);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show("Không thể xuất Excel: " + error.Message, "Lỗi xuất file",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                MessageBox.Show("Đã xuất " + soDong + " đơn hàng ra file Excel.", "Thành công",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private int DemDongDonHang()
+        {
+            int soDong = 0;
+            foreach (DataGridViewRow row in dgvDonHang.Rows)
+            {
+                if (LaDongDonHangHopLe(row))
+                    soDong++;
+            }
+
+            return soDong;
+        }
+
+        private static bool LaDongDonHangHopLe(DataGridViewRow row)
+        {
+            if (row == null || row.IsNewRow)
+                return false;
+
+            return !string.IsNullOrWhiteSpace(Convert.ToString(row.Cells[0].Value));
+        }
+
+        private void XuatDanhSachExcel(string filePath)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                IXLWorksheet sheet = workbook.Worksheets.Add("Đơn hàng");
+                int excelCol = 1;
+                foreach (DataGridViewColumn column in dgvDonHang.Columns)
+                {
+                    if (!column.Visible)
+                        continue;
+
+                    IXLCell header = sheet.Cell(1, excelCol);
+                    header.Value = column.HeaderText;
+                    excelCol++;
+                }
+
+                int lastCol = excelCol - 1;
+                IXLRange headerRange = sheet.Range(1, 1, 1, lastCol);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Font.FontColor = XLColor.White;
+                headerRange.Style.Fill.BackgroundColor = XLColor.FromArgb(27, 75, 107);
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet.Row(1).Height = 22;
+
+                int excelRow = 2;
+                foreach (DataGridViewRow row in dgvDonHang.Rows)
+                {
+                    if (!LaDongDonHangHopLe(row))
+                        continue;
+
+                    excelCol = 1;
+                    foreach (DataGridViewColumn column in dgvDonHang.Columns)
+                    {
+                        if (!column.Visible)
+                            continue;
+
+                        GhiOExcel(sheet.Cell(excelRow, excelCol), column, row.Cells[column.Index].Value);
+                        excelCol++;
+                    }
+
+                    excelRow++;
+                }
+
+                DatDoRongCotExcel(sheet);
+                sheet.SheetView.FreezeRows(1);
+                workbook.SaveAs(filePath);
+            }
+        }
+
+        private static void GhiOExcel(IXLCell cell, DataGridViewColumn column, object value)
+        {
+            if (column.Name == "colNgayDat")
+            {
+                DateTime ngayDat;
+                if (value is DateTime)
+                {
+                    cell.Value = ((DateTime)value).Date;
+                }
+                else if (value != null && DateTime.TryParse(Convert.ToString(value), out ngayDat))
+                {
+                    cell.Value = ngayDat.Date;
+                }
+                else
+                {
+                    cell.Value = Convert.ToString(value);
+                }
+
+                cell.Style.DateFormat.Format = "dd/MM/yyyy";
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                return;
+            }
+
+            if (column.Name == "colTongTien" || column.Name == "colGiamGia" || column.Name == "colThanhTien")
+            {
+                decimal soTien;
+                if (value == null || value == DBNull.Value)
+                    soTien = 0;
+                else
+                    soTien = Convert.ToDecimal(value);
+
+                cell.Value = soTien;
+                cell.Style.NumberFormat.Format = "#,##0";
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                return;
+            }
+
+            cell.Value = value == null || value == DBNull.Value ? string.Empty : Convert.ToString(value);
+        }
+
+        private static void DatDoRongCotExcel(IXLWorksheet sheet)
+        {
+            sheet.Column(1).Width = 16;
+            sheet.Column(2).Width = 28;
+            sheet.Column(3).Width = 16;
+            sheet.Column(4).Width = 14;
+            sheet.Column(5).Width = 16;
+            sheet.Column(6).Width = 14;
+            sheet.Column(7).Width = 16;
+            sheet.Column(8).Width = 16;
+        }
+
+        private void TimKiemDonHang()
+        {
+            string maDon = txtTimMaDon.Text.Trim();
             string khachHang = txtTimKhachHang.Text.Trim();
-            string trangThai = cboTimTrangThai.SelectedIndex > 0
-                ? cboTimTrangThai.SelectedItem as string : null;
+            string trangThai = cboTimTrangThai.SelectedItem as string;
+
+            string sql =
+                "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, " +
+                "GiamGia, ThanhTien, TrangThai FROM dbo.DonHang WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(maDon))
+                sql += " AND MaDonHang LIKE N'%" + maDon.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(khachHang))
+                sql += " AND KhachHang LIKE N'%" + khachHang.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(trangThai) && trangThai != "Tất cả")
+                sql += " AND TrangThai = N'" + trangThai.Replace("'", "''") + "'";
+
+            sql += " ORDER BY NgayDat DESC, MaDonHang";
+
             try
             {
-                Database.LoadGrid(dgvDonHang,
-                    "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, " +
-                    "GiamGia, ThanhTien, TrangThai FROM dbo.DonHang " +
-                    "WHERE ((@Ma = N'' AND @KhachHang = N'') " +
-                    "OR (@Ma <> N'' AND MaDonHang = @Ma) " +
-                    "OR (@KhachHang <> N'' AND CHARINDEX(@KhachHang, KhachHang) > 0)) " +
-                    "AND (@TrangThai IS NULL OR TrangThai = @TrangThai) " +
-                    "ORDER BY NgayDat DESC, MaDonHang",
-                    parameters =>
-                    {
-                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
-                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 4000).Value = khachHang;
-                        parameters.Add("@TrangThai", SqlDbType.NVarChar, 30).Value =
-                            (object)trangThai ?? DBNull.Value;
-                    });
+                Database.LoadGrid(dgvDonHang, sql);
             }
             catch (Exception error)
             {
-                MessageBox.Show("Không thể tìm đơn hàng: " + error.Message, "Lỗi dữ liệu",
+                MessageBox.Show("Không thể tìm kiếm đơn hàng: " + error.Message, "Lỗi dữ liệu",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-        private void btnXuatExcel_Click(object sender, EventArgs e)
-        {
-            ExcelExport.ExportGrid(dgvDonHang, "Đơn hàng", "Xuất danh sách đơn hàng", "Xuất danh sách đơn hàng");
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Drawing;
+using ClosedXML.Excel;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
@@ -22,8 +23,11 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             btnSua.Click += btnSua_Click;
             btnXoa.Click += btnXoa_Click;
             btnLamMoi.Click += btnLamMoi_Click;
+            btnXuatExcel.Click += btnXuatExcel_Click;
             btnTimKiem.Click += btnTimKiem_Click;
             dgvSanPham.CellClick += dgvSanPham_CellClick;
+            txtTimMa.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemSanPham(); };
+            txtTimTen.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemSanPham(); };
             Shown += (sender, args) => TaiDuLieuSanPham();
         }
 
@@ -435,32 +439,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 "DELETE FROM dbo.SanPham WHERE MaSanPham = @Ma", LamMoiSanPham);
         }
 
-        private void btnTimKiem_Click(object sender, EventArgs e)
-        {
-            string ma = txtTimMa.Text.Trim();
-            string ten = txtTimTen.Text.Trim();
-            try
-            {
-                Database.LoadGrid(dgvSanPham,
-                    "SELECT sp.MaSanPham, sp.TenSanPham, dm.TenDanhMuc, sp.GiaBan, sp.SoLuong " +
-                    "FROM dbo.SanPham sp JOIN dbo.DanhMuc dm ON dm.MaDanhMuc = sp.MaDanhMuc " +
-                    "WHERE ((@Ma = N'' AND @Ten = N'') " +
-                    "OR (@Ma <> N'' AND sp.MaSanPham = @Ma) " +
-                    "OR (@Ten <> N'' AND CHARINDEX(@Ten, sp.TenSanPham) > 0)) " +
-                    "ORDER BY sp.MaSanPham",
-                    parameters =>
-                    {
-                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
-                        parameters.Add("@Ten", SqlDbType.NVarChar, 4000).Value = ten;
-                    });
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show("Không thể tìm sản phẩm: " + error.Message, "Lỗi dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private void TaiDanhSachSanPham()
         {
             try
@@ -476,9 +454,163 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void TimKiemSanPham()
+        {
+            string tuKhoa = txtTimMa.Text.Trim();
+            string ten = txtTimTen.Text.Trim();
+
+            string sql =
+                "SELECT sp.MaSanPham, sp.TenSanPham, dm.TenDanhMuc, sp.GiaBan, sp.SoLuong " +
+                "FROM dbo.SanPham sp JOIN dbo.DanhMuc dm ON dm.MaDanhMuc = sp.MaDanhMuc " +
+                "WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(tuKhoa))
+                sql += " AND sp.MaSanPham LIKE N'%" + tuKhoa.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(ten))
+                sql += " AND sp.TenSanPham LIKE N'%" + ten.Replace("'", "''") + "%'";
+
+            sql += " ORDER BY sp.MaSanPham";
+
+            try
+            {
+                Database.LoadGrid(dgvSanPham, sql);
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tìm kiếm sản phẩm: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnTimKiem_Click(object sender, EventArgs e)
+        {
+            TimKiemSanPham();
+        }
+
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
-            ExcelExport.ExportGrid(dgvSanPham, "Sản phẩm", "Xuất danh sách sản phẩm", "Xuất danh sách sản phẩm");
+            int soDong = 0;
+            foreach (DataGridViewRow row in dgvSanPham.Rows)
+            {
+                if (row == null || row.IsNewRow) continue;
+                soDong++;
+            }
+
+            if (soDong == 0)
+            {
+                MessageBox.Show("Không có sản phẩm để xuất Excel.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Title = "Xuất danh sách sản phẩm";
+                dialog.Filter = "Tệp Excel (*.xlsx)|*.xlsx";
+                dialog.DefaultExt = "xlsx";
+                dialog.AddExtension = true;
+                dialog.FileName = "DanhSachSanPham_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    XuatDanhSachExcel(dialog.FileName);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show("Không thể xuất Excel: " + error.Message, "Lỗi xuất file",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                MessageBox.Show("Đã xuất " + soDong + " sản phẩm ra file Excel.", "Thành công",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void XuatDanhSachExcel(string filePath)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                IXLWorksheet sheet = workbook.Worksheets.Add("Sản phẩm");
+                int excelCol = 1;
+
+                foreach (DataGridViewColumn column in dgvSanPham.Columns)
+                {
+                    if (!column.Visible)
+                        continue;
+
+                    IXLCell header = sheet.Cell(1, excelCol);
+                    header.Value = column.HeaderText;
+                    excelCol++;
+                }
+
+                int lastCol = excelCol - 1;
+                if (lastCol >= 1)
+                {
+                    IXLRange headerRange = sheet.Range(1, 1, 1, lastCol);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Font.FontColor = XLColor.White;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.FromArgb(27, 75, 107);
+                    headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    sheet.Row(1).Height = 22;
+                }
+
+                int excelRow = 2;
+                foreach (DataGridViewRow row in dgvSanPham.Rows)
+                {
+                    if (row == null || row.IsNewRow)
+                        continue;
+
+                    excelCol = 1;
+                    foreach (DataGridViewColumn column in dgvSanPham.Columns)
+                    {
+                        if (!column.Visible)
+                            continue;
+
+                        GhiOExcel(sheet.Cell(excelRow, excelCol), column, row.Cells[column.Index].Value);
+                        excelCol++;
+                    }
+
+                    excelRow++;
+                }
+
+                DatDoRongCotExcel(sheet);
+                sheet.SheetView.FreezeRows(1);
+                workbook.SaveAs(filePath);
+            }
+        }
+
+        private static void GhiOExcel(IXLCell cell, DataGridViewColumn column, object value)
+        {
+            if (column.Name == "colGiaBan" || column.Name == "colSoLuong")
+            {
+                decimal num;
+                if (value == null || value == DBNull.Value)
+                    num = 0;
+                else
+                    num = Convert.ToDecimal(value);
+
+                cell.Value = num;
+                cell.Style.NumberFormat.Format = "#,##0";
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                return;
+            }
+
+            cell.Value = value == null || value == DBNull.Value ? string.Empty : Convert.ToString(value);
+        }
+
+        private static void DatDoRongCotExcel(IXLWorksheet sheet)
+        {
+            sheet.Column(1).Width = 18; // Mã
+            sheet.Column(2).Width = 36; // Tên
+            sheet.Column(3).Width = 20; // Danh mục
+            sheet.Column(4).Width = 16; // Giá bán
+            sheet.Column(5).Width = 12; // Số lượng
         }
     }
 }
