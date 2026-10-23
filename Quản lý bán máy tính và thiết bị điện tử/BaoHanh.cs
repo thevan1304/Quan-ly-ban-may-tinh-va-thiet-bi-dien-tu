@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using System.Data;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -226,7 +226,35 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
-
+            string maPhieu = txtTimMaPhieu.Text.Trim();
+            string maSanPham = txtTimMaSanPham.Text.Trim();
+            string khachHang = txtTimKhachHang.Text.Trim();
+            try
+            {
+                Database.LoadGrid(dgvBaoHanh,
+                    "SELECT MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, " +
+                    "NgayMua, ThoiHan, NgayHetHan, TrangThai FROM dbo.vwBaoHanh " +
+                    "WHERE ((@MaPhieu = N'' AND @MaSanPham = N'' AND @KhachHang = N'') " +
+                    "OR (@MaPhieu <> N'' AND MaPhieu = @MaPhieu) " +
+                    "OR (@MaSanPham <> N'' AND MaSanPham = @MaSanPham) " +
+                    "OR (@KhachHang <> N'' AND CHARINDEX(@KhachHang, TenKhachHang) > 0)) " +
+                    "ORDER BY MaPhieu",
+                    parameters =>
+                    {
+                        parameters.Add("@MaPhieu", SqlDbType.NVarChar, 4000).Value = maPhieu;
+                        parameters.Add("@MaSanPham", SqlDbType.NVarChar, 4000).Value = maSanPham;
+                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 4000).Value = khachHang;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tìm phiếu bảo hành: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void btnXuatExcel_Click(object sender, EventArgs e)
+        {
+            ExcelExport.ExportGrid(dgvBaoHanh, "Phiếu bảo hành", "Xuất danh sách phiếu bảo hành", "Xuất danh sách phiếu bảo hành");
         }
     }
 }

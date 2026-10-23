@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using System.Data;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -307,6 +307,38 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
+            string ma = txtTimMa.Text.Trim();
+            string ten = txtTimTen.Text.Trim();
+            string trangThai = cboTimTrangThai.SelectedIndex > 0
+                ? cboTimTrangThai.SelectedItem as string : null;
+            try
+            {
+                Database.LoadGrid(dgvMaGiamGia,
+                    "SELECT MaGiamGia, TenChuongTrinh, LoaiGiam, GiaTriGiam, DonToiThieu, " +
+                    "GiamToiDa, NgayBatDau, NgayKetThuc, SoLuong, TrangThai " +
+                    "FROM dbo.MaGiamGia " +
+                    "WHERE ((@Ma = N'' AND @Ten = N'') " +
+                    "OR (@Ma <> N'' AND MaGiamGia = @Ma) " +
+                    "OR (@Ten <> N'' AND CHARINDEX(@Ten, TenChuongTrinh) > 0)) " +
+                    "AND (@TrangThai IS NULL OR TrangThai = @TrangThai) " +
+                    "ORDER BY MaGiamGia",
+                    parameters =>
+                    {
+                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
+                        parameters.Add("@Ten", SqlDbType.NVarChar, 4000).Value = ten;
+                        parameters.Add("@TrangThai", SqlDbType.NVarChar, 30).Value =
+                            (object)trangThai ?? DBNull.Value;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tìm mã giảm giá: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void btnXuatExcel_Click(object sender, EventArgs e)
+        {
+            ExcelExport.ExportGrid(dgvMaGiamGia, "Mã giảm giá", "Xuất danh sách mã giảm giá", "Xuất danh sách mã giảm giá");
         }
     }
 }

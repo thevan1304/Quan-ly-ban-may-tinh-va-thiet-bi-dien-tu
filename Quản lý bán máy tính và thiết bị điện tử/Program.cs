@@ -74,11 +74,15 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             Size textSize = TextRenderer.MeasureText(graphics, Text, Font,
                 new Size(bounds.Width, bounds.Height), TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
             int gap = string.IsNullOrEmpty(Text) ? 0 : 8;
-            int contentWidth = Image.Width + gap + textSize.Width;
+            int iconSize = Math.Min(24, Math.Min(Image.Width, Image.Height));
+            int contentWidth = iconSize + gap + textSize.Width;
             int x = Math.Max(0, (Width - contentWidth) / 2);
-            graphics.DrawImage(Image, x, (Height - Image.Height) / 2, Image.Width, Image.Height);
-            Rectangle textBounds = new Rectangle(x + Image.Width + gap, 0,
-                Math.Max(0, Width - x - Image.Width - gap), Height);
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.DrawImage(Image,
+                new Rectangle(x, (Height - iconSize) / 2, iconSize, iconSize),
+                0, 0, Image.Width, Image.Height, GraphicsUnit.Pixel);
+            Rectangle textBounds = new Rectangle(x + iconSize + gap, 0,
+                Math.Max(0, Width - x - iconSize - gap), Height);
             TextRenderer.DrawText(graphics, Text, Font, textBounds, Enabled ? ForeColor : SystemColors.GrayText,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
                 TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);

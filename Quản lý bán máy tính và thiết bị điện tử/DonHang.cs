@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using System.Data;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -275,6 +275,37 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
+            string ma = txtTimMaDon.Text.Trim();
+            string khachHang = txtTimKhachHang.Text.Trim();
+            string trangThai = cboTimTrangThai.SelectedIndex > 0
+                ? cboTimTrangThai.SelectedItem as string : null;
+            try
+            {
+                Database.LoadGrid(dgvDonHang,
+                    "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, " +
+                    "GiamGia, ThanhTien, TrangThai FROM dbo.DonHang " +
+                    "WHERE ((@Ma = N'' AND @KhachHang = N'') " +
+                    "OR (@Ma <> N'' AND MaDonHang = @Ma) " +
+                    "OR (@KhachHang <> N'' AND CHARINDEX(@KhachHang, KhachHang) > 0)) " +
+                    "AND (@TrangThai IS NULL OR TrangThai = @TrangThai) " +
+                    "ORDER BY NgayDat DESC, MaDonHang",
+                    parameters =>
+                    {
+                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
+                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 4000).Value = khachHang;
+                        parameters.Add("@TrangThai", SqlDbType.NVarChar, 30).Value =
+                            (object)trangThai ?? DBNull.Value;
+                    });
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tìm đơn hàng: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void btnXuatExcel_Click(object sender, EventArgs e)
+        {
+            ExcelExport.ExportGrid(dgvDonHang, "Đơn hàng", "Xuất danh sách đơn hàng", "Xuất danh sách đơn hàng");
         }
     }
 }
