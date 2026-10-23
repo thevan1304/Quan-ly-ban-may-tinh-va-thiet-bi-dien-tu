@@ -1,4 +1,5 @@
 using System;
+using ClosedXML.Excel;
 using System.Windows.Forms;
 using System.Data;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -202,7 +203,45 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
-            ExcelExport.ExportGrid(dgvDanhMuc, "Danh mục", "Xuất danh sách danh mục", "Xuất danh sách danh mục");
+            int soDong = 0;
+            foreach (DataGridViewRow row in dgvDanhMuc.Rows)
+            {
+                if (row == null || row.IsNewRow) continue;
+                soDong++;
+            }
+
+            if (soDong == 0)
+            {
+                MessageBox.Show("Không có danh mục để xuất Excel.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Title = "Xuất danh sách danh mục";
+                dialog.Filter = "Tệp Excel (*.xlsx)|*.xlsx";
+                dialog.DefaultExt = "xlsx";
+                dialog.AddExtension = true;
+                dialog.FileName = "DanhSachDanhMuc_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    XuatDanhSachExcel(dialog.FileName);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show("Không thể xuất Excel: " + error.Message, "Lỗi xuất file",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                MessageBox.Show("Đã xuất " + soDong + " danh mục ra file Excel.", "Thành công",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
+
     }
 }

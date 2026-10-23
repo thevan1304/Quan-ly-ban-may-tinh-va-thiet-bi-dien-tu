@@ -1,4 +1,5 @@
 using System;
+using ClosedXML.Excel;
 using System.Windows.Forms;
 using System.Data;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -311,7 +312,59 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         }
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
-            ExcelExport.ExportGrid(dgvDonHang, "Đơn hàng", "Xuất danh sách đơn hàng", "Xuất danh sách đơn hàng");
+            int soDong = DemDongDonHang();
+            if (soDong == 0)
+            {
+                MessageBox.Show("Không có đơn hàng để xuất Excel.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Title = "Xuất danh sách đơn hàng";
+                dialog.Filter = "Tệp Excel (*.xlsx)|*.xlsx";
+                dialog.DefaultExt = "xlsx";
+                dialog.AddExtension = true;
+                dialog.FileName = "DanhSachDonHang_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    XuatDanhSachExcel(dialog.FileName);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show("Không thể xuất Excel: " + error.Message, "Lỗi xuất file",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                MessageBox.Show("Đã xuất " + soDong + " đơn hàng ra file Excel.", "Thành công",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
+
+        private int DemDongDonHang()
+        {
+            int soDong = 0;
+            foreach (DataGridViewRow row in dgvDonHang.Rows)
+            {
+                if (LaDongDonHangHopLe(row))
+                    soDong++;
+            }
+
+            return soDong;
+        }
+
+        private static bool LaDongDonHangHopLe(DataGridViewRow row)
+        {
+            if (row == null || row.IsNewRow)
+                return false;
+
+            return !string.IsNullOrWhiteSpace(Convert.ToString(row.Cells[0].Value));
+        }
+
     }
 }
