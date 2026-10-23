@@ -1,7 +1,7 @@
 using System;
-using ClosedXML.Excel;
 using System.Windows.Forms;
 using System.Data;
+using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
 namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
@@ -178,21 +178,19 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             string ma = txtTimMa.Text.Trim();
             string ten = txtTimTen.Text.Trim();
 
-            string sql =
-                "SELECT MaDanhMuc, TenDanhMuc, MoTa " +
-                "FROM dbo.DanhMuc WHERE 1=1";
-
-            if (!string.IsNullOrEmpty(ma))
-                sql += " AND MaDanhMuc LIKE N'%" + ma.Replace("'", "''") + "%";
-
-            if (!string.IsNullOrEmpty(ten))
-                sql += " AND TenDanhMuc LIKE N'%" + ten.Replace("'", "''") + "%";
-
-            sql += " ORDER BY MaDanhMuc";
-
             try
             {
-                Database.LoadGrid(dgvDanhMuc, sql);
+                Database.LoadGrid(dgvDanhMuc,
+                    "SELECT MaDanhMuc, TenDanhMuc, MoTa " +
+                    "FROM dbo.DanhMuc " +
+                    "WHERE (@Ma = N'' OR MaDanhMuc LIKE N'%' + @Ma + N'%') " +
+                    "AND (@Ten = N'' OR TenDanhMuc LIKE N'%' + @Ten + N'%') " +
+                    "ORDER BY MaDanhMuc",
+                    parameters =>
+                    {
+                        parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma;
+                        parameters.Add("@Ten", SqlDbType.NVarChar, 150).Value = ten;
+                    });
             }
             catch (Exception error)
             {
@@ -243,5 +241,60 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
+        private void XuatDanhSachExcel(string filePath)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                IXLWorksheet sheet = workbook.Worksheets.Add("Danh mục");
+                int excelCol = 1;
+
+                foreach (DataGridViewColumn column in dgvDanhMuc.Columns)
+                {
+                    if (!column.Visible)
+                        continue;
+
+                    IXLCell header = sheet.Cell(1, excelCol);
+                    header.Value = column.HeaderText;
+                    excelCol++;
+                }
+
+                int lastCol = excelCol - 1;
+                if (lastCol >= 1)
+                {
+                    IXLRange headerRange = sheet.Range(1, 1, 1, lastCol);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Font.FontColor = XLColor.White;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.FromArgb(27, 75, 107);
+                    headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    sheet.Row(1).Height = 22;
+                }
+
+                int excelRow = 2;
+                foreach (DataGridViewRow row in dgvDanhMuc.Rows)
+                {
+                    if (row == null || row.IsNewRow)
+                        continue;
+
+                    excelCol = 1;
+                    foreach (DataGridViewColumn column in dgvDanhMuc.Columns)
+                    {
+                        if (!column.Visible)
+                            continue;
+
+                        var cell = sheet.Cell(excelRow, excelCol);
+                        var value = row.Cells[column.Index].Value;
+                        cell.Value = value == null || value == DBNull.Value ? string.Empty : Convert.ToString(value);
+                        excelCol++;
+                    }
+
+                    excelRow++;
+                }
+
+                sheet.Columns().AdjustToContents();
+                sheet.SheetView.FreezeRows(1);
+                workbook.SaveAs(filePath);
+            }
+        }
     }
 }

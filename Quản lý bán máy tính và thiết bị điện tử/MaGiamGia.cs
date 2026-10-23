@@ -1,7 +1,7 @@
 using System;
-using ClosedXML.Excel;
 using System.Windows.Forms;
 using System.Data;
+using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
 namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
@@ -14,6 +14,9 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             InitializeComponent();
             dgvMaGiamGia.CellClick += dgvMaGiamGia_CellClick;
+            btnTimKiem.Click += btnTimKiem_Click;
+            txtTimMa.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemMaGiamGia(); };
+            txtTimTen.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemMaGiamGia(); };
             Load += (sender, args) => TaiDanhSach();
         }
 
@@ -311,38 +314,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             TimKiemMaGiamGia();
         }
 
-        private void TimKiemMaGiamGia()
-        {
-            string ma = txtTimMa.Text.Trim();
-            string ten = txtTimTen.Text.Trim();
-            string trangThai = cboTimTrangThai.SelectedItem as string;
-
-            string sql =
-                "SELECT MaGiamGia, TenChuongTrinh, LoaiGiam, GiaTriGiam, DonToiThieu, " +
-                "GiamToiDa, NgayBatDau, NgayKetThuc, SoLuong, TrangThai " +
-                "FROM dbo.MaGiamGia WHERE 1=1";
-
-            if (!string.IsNullOrEmpty(ma))
-                sql += " AND MaGiamGia LIKE N'%" + ma.Replace("'", "''") + "%'";
-
-            if (!string.IsNullOrEmpty(ten))
-                sql += " AND TenChuongTrinh LIKE N'%" + ten.Replace("'", "''") + "%'";
-
-            if (!string.IsNullOrEmpty(trangThai) && trangThai != "Tất cả")
-                sql += " AND TrangThai = N'" + trangThai.Replace("'", "''") + "'";
-
-            sql += " ORDER BY MaGiamGia";
-
-            try
-            {
-                Database.LoadGrid(dgvMaGiamGia, sql);
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show("Không thể tìm kiếm mã giảm giá: " + error.Message, "Lỗi dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
             int soDong = 0;
@@ -385,5 +356,136 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
+        private void XuatDanhSachExcel(string filePath)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                IXLWorksheet sheet = workbook.Worksheets.Add("Mã giảm giá");
+                int excelCol = 1;
+
+                foreach (DataGridViewColumn column in dgvMaGiamGia.Columns)
+                {
+                    if (!column.Visible)
+                        continue;
+
+                    IXLCell header = sheet.Cell(1, excelCol);
+                    header.Value = column.HeaderText;
+                    excelCol++;
+                }
+
+                int lastCol = excelCol - 1;
+                if (lastCol >= 1)
+                {
+                    IXLRange headerRange = sheet.Range(1, 1, 1, lastCol);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Font.FontColor = XLColor.White;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.FromArgb(27, 75, 107);
+                    headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    headerRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    sheet.Row(1).Height = 22;
+                }
+
+                int excelRow = 2;
+                foreach (DataGridViewRow row in dgvMaGiamGia.Rows)
+                {
+                    if (row == null || row.IsNewRow)
+                        continue;
+
+                    excelCol = 1;
+                    foreach (DataGridViewColumn column in dgvMaGiamGia.Columns)
+                    {
+                        if (!column.Visible)
+                            continue;
+
+                        GhiOExcel(sheet.Cell(excelRow, excelCol), column, row.Cells[column.Index].Value);
+                        excelCol++;
+                    }
+
+                    excelRow++;
+                }
+
+                DatDoRongCotExcel(sheet);
+                sheet.SheetView.FreezeRows(1);
+                workbook.SaveAs(filePath);
+            }
+        }
+
+        private static void GhiOExcel(IXLCell cell, DataGridViewColumn column, object value)
+        {
+            if (column.Name == "colNgayBatDau" || column.Name == "colNgayKetThuc")
+            {
+                DateTime dt;
+                if (value is DateTime)
+                {
+                    cell.Value = ((DateTime)value).Date;
+                }
+                else if (value != null && DateTime.TryParse(Convert.ToString(value), out dt))
+                {
+                    cell.Value = dt.Date;
+                }
+                else
+                {
+                    cell.Value = Convert.ToString(value);
+                }
+
+                cell.Style.DateFormat.Format = "dd/MM/yyyy";
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                return;
+            }
+
+            if (column.Name == "colGiaTriGiam" || column.Name == "colDonToiThieu" || column.Name == "colGiamToiDa" || column.Name == "colSoLuong")
+            {
+                decimal num;
+                if (value == null || value == DBNull.Value)
+                    num = 0;
+                else
+                    num = Convert.ToDecimal(value);
+
+                cell.Value = num;
+                cell.Style.NumberFormat.Format = "#,##0";
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                return;
+            }
+
+            cell.Value = value == null || value == DBNull.Value ? string.Empty : Convert.ToString(value);
+        }
+
+        private static void DatDoRongCotExcel(IXLWorksheet sheet)
+        {
+            sheet.Columns().AdjustToContents();
+        }
+
+        private void TimKiemMaGiamGia()
+        {
+            string ma = txtTimMa.Text.Trim();
+            string ten = txtTimTen.Text.Trim();
+            string trangThai = cboTimTrangThai.SelectedItem as string;
+
+            string sql =
+                "SELECT MaGiamGia, TenChuongTrinh, LoaiGiam, GiaTriGiam, DonToiThieu, " +
+                "GiamToiDa, NgayBatDau, NgayKetThuc, SoLuong, TrangThai " +
+                "FROM dbo.MaGiamGia WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(ma))
+                sql += " AND MaGiamGia LIKE N'%" + ma.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(ten))
+                sql += " AND TenChuongTrinh LIKE N'%" + ten.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(trangThai) && trangThai != "Tất cả")
+                sql += " AND TrangThai = N'" + trangThai.Replace("'", "''") + "'";
+
+            sql += " ORDER BY MaGiamGia";
+
+            try
+            {
+                Database.LoadGrid(dgvMaGiamGia, sql);
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tìm kiếm mã giảm giá: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
