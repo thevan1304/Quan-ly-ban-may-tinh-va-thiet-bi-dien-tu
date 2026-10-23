@@ -176,25 +176,30 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         {
             string ma = txtTimMa.Text.Trim();
             string ten = txtTimTen.Text.Trim();
+
+            string sql =
+                "SELECT MaDanhMuc, TenDanhMuc, MoTa " +
+                "FROM dbo.DanhMuc WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(ma))
+                sql += " AND MaDanhMuc LIKE N'%" + ma.Replace("'", "''") + "%";
+
+            if (!string.IsNullOrEmpty(ten))
+                sql += " AND TenDanhMuc LIKE N'%" + ten.Replace("'", "''") + "%";
+
+            sql += " ORDER BY MaDanhMuc";
+
             try
             {
-                Database.LoadGrid(dgvDanhMuc,
-                    "SELECT MaDanhMuc, TenDanhMuc, MoTa FROM dbo.DanhMuc " +
-                    "WHERE (@Ma = N'' OR MaDanhMuc LIKE N'%' + @Ma + N'%') " +
-                    "AND (@Ten = N'' OR TenDanhMuc LIKE N'%' + @Ten + N'%') " +
-                    "ORDER BY MaDanhMuc",
-                    parameters =>
-                    {
-                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
-                        parameters.Add("@Ten", SqlDbType.NVarChar, 4000).Value = ten;
-                    });
+                Database.LoadGrid(dgvDanhMuc, sql);
             }
             catch (Exception error)
             {
-                MessageBox.Show("Không thể tìm danh mục: " + error.Message, "Lỗi dữ liệu",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Không thể tìm kiếm danh mục: " + error.Message,
+                    "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
             ExcelExport.ExportGrid(dgvDanhMuc, "Danh mục", "Xuất danh sách danh mục", "Xuất danh sách danh mục");
