@@ -437,26 +437,34 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
-            string ma = txtTimMa.Text.Trim();
+            TimKiemSanPham();
+        }
+
+        private void TimKiemSanPham()
+        {
+            string tuKhoa = txtTimMa.Text.Trim();
             string ten = txtTimTen.Text.Trim();
+
+            string sql =
+                "SELECT sp.MaSanPham, sp.TenSanPham, dm.TenDanhMuc, sp.GiaBan, sp.SoLuong " +
+                "FROM dbo.SanPham sp JOIN dbo.DanhMuc dm ON dm.MaDanhMuc = sp.MaDanhMuc " +
+                "WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(tuKhoa))
+                sql += " AND sp.MaSanPham LIKE N'%" + tuKhoa.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(ten))
+                sql += " AND sp.TenSanPham LIKE N'%" + ten.Replace("'", "''") + "%'";
+
+            sql += " ORDER BY sp.MaSanPham";
+
             try
             {
-                Database.LoadGrid(dgvSanPham,
-                    "SELECT sp.MaSanPham, sp.TenSanPham, dm.TenDanhMuc, sp.GiaBan, sp.SoLuong " +
-                    "FROM dbo.SanPham sp JOIN dbo.DanhMuc dm ON dm.MaDanhMuc = sp.MaDanhMuc " +
-                    "WHERE ((@Ma = N'' AND @Ten = N'') " +
-                    "OR (@Ma <> N'' AND sp.MaSanPham = @Ma) " +
-                    "OR (@Ten <> N'' AND CHARINDEX(@Ten, sp.TenSanPham) > 0)) " +
-                    "ORDER BY sp.MaSanPham",
-                    parameters =>
-                    {
-                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
-                        parameters.Add("@Ten", SqlDbType.NVarChar, 4000).Value = ten;
-                    });
+                Database.LoadGrid(dgvSanPham, sql);
             }
             catch (Exception error)
             {
-                MessageBox.Show("Không thể tìm sản phẩm: " + error.Message, "Lỗi dữ liệu",
+                MessageBox.Show("Không thể tìm kiếm sản phẩm: " + error.Message, "Lỗi dữ liệu",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

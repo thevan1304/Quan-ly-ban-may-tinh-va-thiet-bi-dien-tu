@@ -275,31 +275,37 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
-            string ma = txtTimMaDon.Text.Trim();
+            TimKiemDonHang();
+        }
+
+        private void TimKiemDonHang()
+        {
+            string maDon = txtTimMaDon.Text.Trim();
             string khachHang = txtTimKhachHang.Text.Trim();
-            string trangThai = cboTimTrangThai.SelectedIndex > 0
-                ? cboTimTrangThai.SelectedItem as string : null;
+            string trangThai = cboTimTrangThai.SelectedItem as string;
+
+            string sql =
+                "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, " +
+                "GiamGia, ThanhTien, TrangThai FROM dbo.DonHang WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(maDon))
+                sql += " AND MaDonHang LIKE N'%" + maDon.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(khachHang))
+                sql += " AND KhachHang LIKE N'%" + khachHang.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(trangThai) && trangThai != "Tất cả")
+                sql += " AND TrangThai = N'" + trangThai.Replace("'", "''") + "'";
+
+            sql += " ORDER BY NgayDat DESC, MaDonHang";
+
             try
             {
-                Database.LoadGrid(dgvDonHang,
-                    "SELECT MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, " +
-                    "GiamGia, ThanhTien, TrangThai FROM dbo.DonHang " +
-                    "WHERE ((@Ma = N'' AND @KhachHang = N'') " +
-                    "OR (@Ma <> N'' AND MaDonHang = @Ma) " +
-                    "OR (@KhachHang <> N'' AND CHARINDEX(@KhachHang, KhachHang) > 0)) " +
-                    "AND (@TrangThai IS NULL OR TrangThai = @TrangThai) " +
-                    "ORDER BY NgayDat DESC, MaDonHang",
-                    parameters =>
-                    {
-                        parameters.Add("@Ma", SqlDbType.NVarChar, 4000).Value = ma;
-                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 4000).Value = khachHang;
-                        parameters.Add("@TrangThai", SqlDbType.NVarChar, 30).Value =
-                            (object)trangThai ?? DBNull.Value;
-                    });
+                Database.LoadGrid(dgvDonHang, sql);
             }
             catch (Exception error)
             {
-                MessageBox.Show("Không thể tìm đơn hàng: " + error.Message, "Lỗi dữ liệu",
+                MessageBox.Show("Không thể tìm kiếm đơn hàng: " + error.Message, "Lỗi dữ liệu",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

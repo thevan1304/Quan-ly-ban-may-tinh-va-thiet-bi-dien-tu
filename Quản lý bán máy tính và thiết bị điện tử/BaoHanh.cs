@@ -226,29 +226,38 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
 
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
+            TimKiemBaoHanh();
+        }
+
+        private void TimKiemBaoHanh()
+        {
             string maPhieu = txtTimMaPhieu.Text.Trim();
             string maSanPham = txtTimMaSanPham.Text.Trim();
             string khachHang = txtTimKhachHang.Text.Trim();
+
+            string sql =
+                "SELECT MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, " +
+                "NgayMua, ThoiHan, NgayHetHan, TrangThai " +
+                "FROM dbo.vwBaoHanh WHERE 1=1";
+
+            if (!string.IsNullOrEmpty(maPhieu))
+                sql += " AND MaPhieu LIKE N'%" + maPhieu.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(maSanPham))
+                sql += " AND MaSanPham LIKE N'%" + maSanPham.Replace("'", "''") + "%'";
+
+            if (!string.IsNullOrEmpty(khachHang))
+                sql += " AND TenKhachHang LIKE N'%" + khachHang.Replace("'", "''") + "%'";
+
+            sql += " ORDER BY MaPhieu";
+
             try
             {
-                Database.LoadGrid(dgvBaoHanh,
-                    "SELECT MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, " +
-                    "NgayMua, ThoiHan, NgayHetHan, TrangThai FROM dbo.vwBaoHanh " +
-                    "WHERE ((@MaPhieu = N'' AND @MaSanPham = N'' AND @KhachHang = N'') " +
-                    "OR (@MaPhieu <> N'' AND MaPhieu = @MaPhieu) " +
-                    "OR (@MaSanPham <> N'' AND MaSanPham = @MaSanPham) " +
-                    "OR (@KhachHang <> N'' AND CHARINDEX(@KhachHang, TenKhachHang) > 0)) " +
-                    "ORDER BY MaPhieu",
-                    parameters =>
-                    {
-                        parameters.Add("@MaPhieu", SqlDbType.NVarChar, 4000).Value = maPhieu;
-                        parameters.Add("@MaSanPham", SqlDbType.NVarChar, 4000).Value = maSanPham;
-                        parameters.Add("@KhachHang", SqlDbType.NVarChar, 4000).Value = khachHang;
-                    });
+                Database.LoadGrid(dgvBaoHanh, sql);
             }
             catch (Exception error)
             {
-                MessageBox.Show("Không thể tìm phiếu bảo hành: " + error.Message, "Lỗi dữ liệu",
+                MessageBox.Show("Không thể tìm kiếm phiếu bảo hành: " + error.Message, "Lỗi dữ liệu",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
