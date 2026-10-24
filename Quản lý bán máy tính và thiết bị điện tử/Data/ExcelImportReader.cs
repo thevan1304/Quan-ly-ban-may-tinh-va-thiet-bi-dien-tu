@@ -19,10 +19,11 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data
                 return value.Date;
 
             string text = cell.GetString().Trim();
-            string[] formats = { "dd/MM/yyyy", "d/M/yyyy", "MM/dd/yyyy", "M/d/yyyy", "dd/MM/yyyy h:mm:ss tt", "M/d/yyyy h:mm:ss tt" };
-            if (DateTime.TryParseExact(text, formats, CultureInfo.InvariantCulture,
+            string dateText = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
+            string[] formats = { "dd/MM/yyyy", "d/M/yyyy", "MM/dd/yyyy", "M/d/yyyy", "yyyy-MM-dd" };
+            if (DateTime.TryParseExact(dateText, formats, CultureInfo.InvariantCulture,
                     DateTimeStyles.AllowWhiteSpaces, out value) ||
-                DateTime.TryParse(text, CultureInfo.CurrentCulture,
+                DateTime.TryParse(dateText, CultureInfo.CurrentCulture,
                     DateTimeStyles.AllowWhiteSpaces, out value))
             {
                 return value.Date;
