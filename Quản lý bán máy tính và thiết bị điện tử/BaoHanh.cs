@@ -398,7 +398,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                         DateTime ngayMua = ExcelImportReader.Date(row, 5);
                         int thoiHan = ExcelImportReader.Integer(row, 6);
                         string ghiChu = string.Empty;
-                        Database.Execute("INSERT INTO dbo.BaoHanh (MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, NgayMua, ThoiHan, GhiChu) VALUES (@Ma, @SP, @KH, @SDT, @Ngay, @Han, @GhiChu)", p => { p.Add("@Ma", SqlDbType.NVarChar, 30).Value = maPhieu; p.Add("@SP", SqlDbType.NVarChar, 30).Value = maSanPham; p.Add("@KH", SqlDbType.NVarChar, 150).Value = khachHang; p.Add("@SDT", SqlDbType.NVarChar, 20).Value = soDienThoai.Length == 0 ? (object)DBNull.Value : soDienThoai; p.Add("@Ngay", SqlDbType.Date).Value = ngayMua; p.Add("@Han", SqlDbType.Int).Value = thoiHan; p.Add("@GhiChu", SqlDbType.NVarChar, 500).Value = ghiChu.Length == 0 ? (object)DBNull.Value : ghiChu; });
+                        Database.Execute("INSERT INTO dbo.BaoHanh (MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, NgayMua, ThoiHan, GhiChu) VALUES (@Ma, @SP, @KH, @SDT, @Ngay, @Han, @GhiChu)", p => { p.Add("@Ma", SqlDbType.NVarChar, 30).Value = maPhieu; p.Add("@SP", SqlDbType.NVarChar, 30).Value = maSanPham; p.Add("@KH", SqlDbType.NVarChar, 150).Value = khachHang; p.Add("@SDT", SqlDbType.NVarChar, 20).Value = soDienThoai.Length == 0 ? (object)DBNull.Value : soDienThoai; p.Add("@Ngay", SqlDbType.Date).Value = ngayMua; p.Add("@Han", SqlDbType.Int).Value = thoiHan; p.Add("@GhiChu", SqlDbType.NVarChar, 500).Value = ghiChu; });
                         imported++;
                     }
                     TaiDanhSach();
