@@ -14,6 +14,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         public DonHang()
         {
             InitializeComponent();
+            dgvDonHang.Columns["colNgayDat"].DefaultCellStyle.Format = "dd/MM/yyyy";
             numThanhTien.Enabled = false;
             numTongTien.ValueChanged += (sender, args) => CapNhatThanhTien();
             numGiamGia.ValueChanged += (sender, args) => CapNhatThanhTien();
