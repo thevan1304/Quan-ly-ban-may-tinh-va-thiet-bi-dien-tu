@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using ClosedXML.Excel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -24,6 +27,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             btnXoa.Click += btnXoa_Click;
             btnLamMoi.Click += btnLamMoi_Click;
             btnXuatExcel.Click += btnXuatExcel_Click;
+            mnuNhapSanPham.Click += mnuNhapSanPham_Click;
             btnTimKiem.Click += btnTimKiem_Click;
             dgvSanPham.CellClick += dgvSanPham_CellClick;
             txtTimMa.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemSanPham(); };
@@ -487,6 +491,162 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
             TimKiemSanPham();
+        }
+
+        private void mnuNhapSanPham_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Title = "Nhập danh sách sản phẩm";
+                dialog.Filter = "Tệp Excel (*.xlsx)|*.xlsx";
+                dialog.Multiselect = false;
+
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    int imported = NhapDanhSachSanPham(dialog.FileName);
+                    TaiDuLieuSanPham();
+                    MessageBox.Show("Đã nhập " + imported + " sản phẩm.", "Thành công",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(error.Message, "Lỗi nhập file",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnNhapExcel_Click(object sender, EventArgs e)
+        {
+            mnuNhapSanPham_Click(sender, e);
+        }
+
+        private int NhapDanhSachSanPham(string filePath)
+        {
+            using (var workbook = new XLWorkbook(filePath))
+            {
+                IXLWorksheet sheet = workbook.Worksheets.FirstOrDefault();
+                if (sheet == null || sheet.LastRowUsed() == null)
+                    throw new InvalidOperationException("File Excel không có dữ liệu.");
+
+                var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                IXLRow headerRow = sheet.FirstRowUsed();
+                foreach (IXLCell cell in headerRow.CellsUsed())
+                    headers[NormalizeHeader(cell.GetString())] = cell.Address.ColumnNumber;
+
+                string[] requiredHeaders = { "Mã sản phẩm", "Tên sản phẩm", "Danh mục", "Giá bán", "Số lượng" };
+                foreach (string required in requiredHeaders)
+                {
+                    if (!headers.ContainsKey(NormalizeHeader(required)))
+                        throw new InvalidOperationException("Thiếu cột bắt buộc: " + required + ".");
+                }
+
+                IXLRow lastRow = sheet.LastRowUsed();
+                var productCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                int imported = 0;
+
+                using (SqlConnection connection = Database.OpenConnection())
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        for (int rowNumber = headerRow.RowNumber() + 1; rowNumber <= lastRow.RowNumber(); rowNumber++)
+                        {
+                            IXLRow row = sheet.Row(rowNumber);
+                            string ma = ReadCell(row, headers, "Mã sản phẩm");
+                            string ten = ReadCell(row, headers, "Tên sản phẩm");
+                            string danhMuc = ReadCell(row, headers, "Danh mục");
+                            string giaText = ReadCell(row, headers, "Giá bán");
+                            string soLuongText = ReadCell(row, headers, "Số lượng");
+
+                            if (string.IsNullOrWhiteSpace(ma) && string.IsNullOrWhiteSpace(ten)
+                                && string.IsNullOrWhiteSpace(danhMuc) && string.IsNullOrWhiteSpace(giaText)
+                                && string.IsNullOrWhiteSpace(soLuongText))
+                                continue;
+
+                            if (string.IsNullOrWhiteSpace(ma) || string.IsNullOrWhiteSpace(ten)
+                                || string.IsNullOrWhiteSpace(danhMuc))
+                                throw new InvalidOperationException("Dòng " + rowNumber + ": mã, tên và danh mục không được để trống.");
+
+                            if (!productCodes.Add(ma))
+                                throw new InvalidOperationException("Dòng " + rowNumber + ": mã sản phẩm " + ma + " bị trùng trong file.");
+
+                            decimal giaBan;
+                            if (!TryParseDecimal(giaText, out giaBan) || giaBan < 0)
+                                throw new InvalidOperationException("Dòng " + rowNumber + ": giá bán phải là số không âm.");
+
+                            int soLuong;
+                            if (!int.TryParse(soLuongText, NumberStyles.Integer, CultureInfo.CurrentCulture, out soLuong)
+                                || soLuong < 0)
+                                throw new InvalidOperationException("Dòng " + rowNumber + ": số lượng phải là số nguyên không âm.");
+
+                            string maDanhMuc;
+                            using (var command = new SqlCommand(
+                                "SELECT TOP 1 MaDanhMuc FROM dbo.DanhMuc WHERE MaDanhMuc = @DanhMuc OR TenDanhMuc = @DanhMuc",
+                                connection, transaction))
+                            {
+                                command.Parameters.Add("@DanhMuc", SqlDbType.NVarChar, 150).Value = danhMuc;
+                                maDanhMuc = Convert.ToString(command.ExecuteScalar());
+                            }
+
+                            if (string.IsNullOrWhiteSpace(maDanhMuc))
+                                throw new InvalidOperationException("Dòng " + rowNumber + ": danh mục " + danhMuc + " không tồn tại.");
+
+                            using (var command = new SqlCommand(
+                                "SELECT COUNT(1) FROM dbo.SanPham WHERE MaSanPham = @Ma", connection, transaction))
+                            {
+                                command.Parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma;
+                                if (Convert.ToInt32(command.ExecuteScalar()) > 0)
+                                    throw new InvalidOperationException("Dòng " + rowNumber + ": mã sản phẩm " + ma + " đã tồn tại.");
+                            }
+
+                            using (var command = new SqlCommand(
+                                "INSERT INTO dbo.SanPham (MaSanPham, TenSanPham, MaDanhMuc, GiaBan, SoLuong) " +
+                                "VALUES (@Ma, @Ten, @DanhMuc, @GiaBan, @SoLuong)", connection, transaction))
+                            {
+                                command.Parameters.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma;
+                                command.Parameters.Add("@Ten", SqlDbType.NVarChar, 200).Value = ten;
+                                command.Parameters.Add("@DanhMuc", SqlDbType.NVarChar, 30).Value = maDanhMuc;
+                                var price = command.Parameters.Add("@GiaBan", SqlDbType.Decimal);
+                                price.Precision = 18;
+                                price.Scale = 2;
+                                price.Value = giaBan;
+                                command.Parameters.Add("@SoLuong", SqlDbType.Int).Value = soLuong;
+                                command.ExecuteNonQuery();
+                            }
+
+                            imported++;
+                        }
+
+                        transaction.Commit();
+                        return imported;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        private static string NormalizeHeader(string value)
+        {
+            return (value ?? string.Empty).Trim().ToLowerInvariant();
+        }
+
+        private static string ReadCell(IXLRow row, Dictionary<string, int> headers, string header)
+        {
+            return row.Cell(headers[NormalizeHeader(header)]).GetString().Trim();
+        }
+
+        private static bool TryParseDecimal(string value, out decimal result)
+        {
+            return decimal.TryParse(value, NumberStyles.Number, CultureInfo.CurrentCulture, out result)
+                || decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
         }
 
         private void btnXuatExcel_Click(object sender, EventArgs e)

@@ -21,6 +21,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.tblMenu = new System.Windows.Forms.TableLayoutPanel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.mnuSanPham = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuNhapSanPham = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDanhMuc = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuBaoHanh = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuMaGiamGia = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,6 +48,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnSua = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.btnXoa = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.btnLamMoi = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
+            this.btnNhapExcel = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.btnXuatExcel = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.grpTimKiem = new System.Windows.Forms.GroupBox();
             this.lblTimMa = new System.Windows.Forms.Label();
@@ -123,12 +125,21 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             //
             // mnuSanPham
             //
+            this.mnuSanPham.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuNhapSanPham});
             this.mnuSanPham.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(75)))), ((int)(((byte)(107)))));
             this.mnuSanPham.Name = "mnuSanPham";
             this.mnuSanPham.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
             this.mnuSanPham.Size = new System.Drawing.Size(118, 39);
             this.mnuSanPham.Text = "Sản phẩm";
             this.mnuSanPham.Click += new System.EventHandler(this.mnuSanPham_Click);
+            //
+            // mnuNhapSanPham
+            //
+            this.mnuNhapSanPham.Name = "mnuNhapSanPham";
+            this.mnuNhapSanPham.Size = new System.Drawing.Size(180, 22);
+            this.mnuNhapSanPham.Text = "Nhập Excel...";
+            this.mnuNhapSanPham.Click += new System.EventHandler(this.mnuNhapSanPham_Click);
             //
             // mnuDanhMuc
             //
@@ -421,6 +432,22 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnLamMoi.Text = "   LÀM MỚI";
             this.btnLamMoi.UseVisualStyleBackColor = false;
             //
+            // btnNhapExcel
+            //
+            this.btnNhapExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(125)))), ((int)(((byte)(190)))));
+            this.btnNhapExcel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnNhapExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNhapExcel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnNhapExcel.ForeColor = System.Drawing.Color.White;
+            this.btnNhapExcel.Image = global::Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Properties.Resources.upload;
+            this.btnNhapExcel.Location = new System.Drawing.Point(990, 25);
+            this.btnNhapExcel.Name = "btnNhapExcel";
+            this.btnNhapExcel.Size = new System.Drawing.Size(120, 40);
+            this.btnNhapExcel.TabIndex = 5;
+            this.btnNhapExcel.Text = "NHẬP FILE";
+            this.btnNhapExcel.UseVisualStyleBackColor = false;
+            this.btnNhapExcel.Click += new System.EventHandler(this.btnNhapExcel_Click);
+            //
             // btnXuatExcel
             //
             this.btnXuatExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(124)))), ((int)(((byte)(65)))));
@@ -444,6 +471,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.grpTimKiem.Controls.Add(this.lblTimTen);
             this.grpTimKiem.Controls.Add(this.txtTimTen);
             this.grpTimKiem.Controls.Add(this.btnTimKiem);
+            this.grpTimKiem.Controls.Add(this.btnNhapExcel);
             this.grpTimKiem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpTimKiem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(75)))), ((int)(((byte)(107)))));
             this.grpTimKiem.Location = new System.Drawing.Point(10, 235);
@@ -499,11 +527,11 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnTimKiem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnTimKiem.ForeColor = System.Drawing.Color.White;
             this.btnTimKiem.Image = ((System.Drawing.Image)(resources.GetObject("btnTimKiem.Image")));
-            this.btnTimKiem.Location = new System.Drawing.Point(875, 25);
+            this.btnTimKiem.Location = new System.Drawing.Point(855, 25);
             this.btnTimKiem.Name = "btnTimKiem";
-            this.btnTimKiem.Size = new System.Drawing.Size(220, 40);
+            this.btnTimKiem.Size = new System.Drawing.Size(130, 40);
             this.btnTimKiem.TabIndex = 4;
-            this.btnTimKiem.Text = "   TÌM KIẾM";
+            this.btnTimKiem.Text = "TÌM KIẾM";
             this.btnTimKiem.UseVisualStyleBackColor = false;
             //
             // lblDanhSach
@@ -720,6 +748,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private System.Windows.Forms.Panel pnlSanPham;
 
         private System.Windows.Forms.ToolStripMenuItem mnuSanPham;
+        private System.Windows.Forms.ToolStripMenuItem mnuNhapSanPham;
         private System.Windows.Forms.ToolStripMenuItem mnuDanhMuc;
         private System.Windows.Forms.ToolStripMenuItem mnuBaoHanh;
         private System.Windows.Forms.ToolStripMenuItem mnuMaGiamGia;
@@ -761,6 +790,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnSua;
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnXoa;
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnLamMoi;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnNhapExcel;
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnXuatExcel;
 
         private System.Windows.Forms.GroupBox grpTimKiem;
