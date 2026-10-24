@@ -14,6 +14,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         public BaoHanh()
         {
             InitializeComponent();
+            dgvBaoHanh.Columns["colNgayMua"].DefaultCellStyle.Format = "dd/MM/yyyy";
+            dgvBaoHanh.Columns["colNgayHetHan"].DefaultCellStyle.Format = "dd/MM/yyyy";
             dtpNgayHetHan.Enabled = false;
             cboTrangThai.Enabled = false;
             dtpNgayMua.ValueChanged += (sender, args) => CapNhatNgayHetHan();
