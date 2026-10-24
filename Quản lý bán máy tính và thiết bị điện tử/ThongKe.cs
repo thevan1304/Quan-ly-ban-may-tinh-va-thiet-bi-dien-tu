@@ -61,5 +61,64 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
+        private void XuatDanhSachExcel(string filePath)
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                IXLWorksheet sheet = workbook.Worksheets.Add("Thống kê doanh thu");
+                int excelColumn = 1;
+
+                foreach (DataGridViewColumn column in dgvThongKe.Columns)
+                {
+                    if (!column.Visible)
+                        continue;
+
+                    sheet.Cell(1, excelColumn).Value = column.HeaderText;
+                    excelColumn++;
+                }
+
+                int lastColumn = excelColumn - 1;
+                if (lastColumn == 0)
+                    return;
+
+                IXLRange header = sheet.Range(1, 1, 1, lastColumn);
+                header.Style.Font.Bold = true;
+                header.Style.Font.FontColor = XLColor.White;
+                header.Style.Fill.BackgroundColor = XLColor.FromArgb(27, 75, 107);
+                header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                header.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                sheet.Row(1).Height = 22;
+
+                int excelRow = 2;
+                foreach (DataGridViewRow row in dgvThongKe.Rows)
+                {
+                    if (row == null || row.IsNewRow)
+                        continue;
+
+                    excelColumn = 1;
+                    foreach (DataGridViewColumn column in dgvThongKe.Columns)
+                    {
+                        if (!column.Visible)
+                            continue;
+
+                        object value = row.Cells[column.Index].Value;
+                        IXLCell cell = sheet.Cell(excelRow, excelColumn);
+                        cell.Value = value == null ? string.Empty : value.ToString();
+
+                        if (value is DateTime)
+                            cell.Style.DateFormat.Format = "dd/MM/yyyy";
+
+                        excelColumn++;
+                    }
+
+                    excelRow++;
+                }
+
+                sheet.Columns().AdjustToContents();
+                sheet.SheetView.FreezeRows(1);
+                workbook.SaveAs(filePath);
+            }
+        }
+
     }
 }
