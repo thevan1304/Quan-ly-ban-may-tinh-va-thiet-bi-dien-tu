@@ -61,6 +61,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.lblTimTrangThai = new System.Windows.Forms.Label();
             this.cboTimTrangThai = new System.Windows.Forms.ComboBox();
             this.btnTimKiem = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
+            this.btnNhapExcel = new Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton();
             this.lblDanhSach = new System.Windows.Forms.Label();
             this.dgvDonHang = new System.Windows.Forms.DataGridView();
             this.colMaDon = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -441,7 +442,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             // btnThem
             //
             this.btnThem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(156)))), ((int)(((byte)(110)))));
-            this.btnThem.BorderRadius = 20;
+            this.btnThem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnThem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnThem.ForeColor = System.Drawing.Color.White;
             this.btnThem.Image = ((System.Drawing.Image)(resources.GetObject("btnThem.Image")));
@@ -450,12 +451,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnThem.Size = new System.Drawing.Size(190, 44);
             this.btnThem.TabIndex = 0;
             this.btnThem.Text = "   THÊM";
+            this.btnThem.UseVisualStyleBackColor = false;
             this.btnThem.Click += new System.EventHandler(this.btnThem_Click);
             //
             // btnSua
             //
             this.btnSua.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(125)))), ((int)(((byte)(190)))));
-            this.btnSua.BorderRadius = 20;
+            this.btnSua.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSua.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnSua.ForeColor = System.Drawing.Color.White;
             this.btnSua.Image = ((System.Drawing.Image)(resources.GetObject("btnSua.Image")));
@@ -464,12 +466,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnSua.Size = new System.Drawing.Size(190, 44);
             this.btnSua.TabIndex = 1;
             this.btnSua.Text = "   SỬA";
+            this.btnSua.UseVisualStyleBackColor = false;
             this.btnSua.Click += new System.EventHandler(this.btnSua_Click);
             //
             // btnXoa
             //
             this.btnXoa.BackColor = System.Drawing.Color.IndianRed;
-            this.btnXoa.BorderRadius = 20;
+            this.btnXoa.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnXoa.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnXoa.ForeColor = System.Drawing.Color.White;
             this.btnXoa.Image = ((System.Drawing.Image)(resources.GetObject("btnXoa.Image")));
@@ -478,12 +481,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnXoa.Size = new System.Drawing.Size(190, 44);
             this.btnXoa.TabIndex = 2;
             this.btnXoa.Text = "   XÓA";
+            this.btnXoa.UseVisualStyleBackColor = false;
             this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
             //
             // btnLamMoi
             //
             this.btnLamMoi.BackColor = System.Drawing.Color.Navy;
-            this.btnLamMoi.BorderRadius = 20;
+            this.btnLamMoi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLamMoi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnLamMoi.ForeColor = System.Drawing.Color.White;
             this.btnLamMoi.Image = ((System.Drawing.Image)(resources.GetObject("btnLamMoi.Image")));
@@ -492,12 +496,13 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnLamMoi.Size = new System.Drawing.Size(190, 44);
             this.btnLamMoi.TabIndex = 3;
             this.btnLamMoi.Text = "   LÀM MỚI";
+            this.btnLamMoi.UseVisualStyleBackColor = false;
             this.btnLamMoi.Click += new System.EventHandler(this.btnLamMoi_Click);
             //
             // btnXuatExcel
             //
             this.btnXuatExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(16)))), ((int)(((byte)(124)))), ((int)(((byte)(65)))));
-            this.btnXuatExcel.BorderRadius = 20;
+            this.btnXuatExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnXuatExcel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnXuatExcel.ForeColor = System.Drawing.Color.White;
             this.btnXuatExcel.Image = global::Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Properties.Resources.export;
@@ -506,6 +511,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.btnXuatExcel.Size = new System.Drawing.Size(210, 44);
             this.btnXuatExcel.TabIndex = 4;
             this.btnXuatExcel.Text = "XUẤT EXCEL";
+            this.btnXuatExcel.UseVisualStyleBackColor = false;
             this.btnXuatExcel.Click += new System.EventHandler(this.btnXuatExcel_Click);
             //
             // grpTimKiem
@@ -517,6 +523,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.grpTimKiem.Controls.Add(this.lblTimTrangThai);
             this.grpTimKiem.Controls.Add(this.cboTimTrangThai);
             this.grpTimKiem.Controls.Add(this.btnTimKiem);
+            this.grpTimKiem.Controls.Add(this.btnNhapExcel);
             this.grpTimKiem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpTimKiem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(75)))), ((int)(((byte)(107)))));
             this.grpTimKiem.Location = new System.Drawing.Point(10, 300);
@@ -587,22 +594,38 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             "Đã hủy"});
             this.cboTimTrangThai.Location = new System.Drawing.Point(755, 34);
             this.cboTimTrangThai.Name = "cboTimTrangThai";
-            this.cboTimTrangThai.Size = new System.Drawing.Size(145, 25);
+            this.cboTimTrangThai.Size = new System.Drawing.Size(90, 25);
             this.cboTimTrangThai.TabIndex = 5;
             //
             // btnTimKiem
             //
             this.btnTimKiem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(7)))), ((int)(((byte)(156)))), ((int)(((byte)(170)))));
-            this.btnTimKiem.BorderRadius = 20;
+            this.btnTimKiem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTimKiem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnTimKiem.ForeColor = System.Drawing.Color.White;
             this.btnTimKiem.Image = ((System.Drawing.Image)(resources.GetObject("btnTimKiem.Image")));
-            this.btnTimKiem.Location = new System.Drawing.Point(920, 26);
+            this.btnTimKiem.Location = new System.Drawing.Point(855, 26);
             this.btnTimKiem.Name = "btnTimKiem";
-            this.btnTimKiem.Size = new System.Drawing.Size(175, 40);
+            this.btnTimKiem.Size = new System.Drawing.Size(130, 40);
             this.btnTimKiem.TabIndex = 6;
-            this.btnTimKiem.Text = "   TÌM KIẾM";
+            this.btnTimKiem.Text = "TÌM KIẾM";
+            this.btnTimKiem.UseVisualStyleBackColor = false;
             this.btnTimKiem.Click += new System.EventHandler(this.btnTimKiem_Click);
+            //
+            // btnNhapExcel
+            //
+            this.btnNhapExcel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(125)))), ((int)(((byte)(190)))));
+            this.btnNhapExcel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNhapExcel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnNhapExcel.ForeColor = System.Drawing.Color.White;
+            this.btnNhapExcel.Image = global::Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Properties.Resources.upload;
+            this.btnNhapExcel.Location = new System.Drawing.Point(990, 26);
+            this.btnNhapExcel.Name = "btnNhapExcel";
+            this.btnNhapExcel.Size = new System.Drawing.Size(120, 40);
+            this.btnNhapExcel.TabIndex = 7;
+            this.btnNhapExcel.Text = "NHẬP FILE";
+            this.btnNhapExcel.UseVisualStyleBackColor = false;
+            this.btnNhapExcel.Click += new System.EventHandler(this.btnNhapExcel_Click);
             //
             // lblDanhSach
             //
@@ -782,6 +805,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnSua;
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnXoa;
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnLamMoi;
+        private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnNhapExcel;
         private Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.RoundedButton btnXuatExcel;
 
         private System.Windows.Forms.GroupBox grpTimKiem;

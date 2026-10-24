@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Data;
+using System.Linq;
 using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
@@ -312,6 +313,38 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
             TimKiemMaGiamGia();
+        }
+
+        private void btnNhapExcel_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Tệp Excel (*.xlsx)|*.xlsx", Title = "Nhập mã giảm giá" })
+            {
+                if (dialog.ShowDialog() != DialogResult.OK) return;
+                try
+                {
+                    int imported = 0;
+                    using (var workbook = new XLWorkbook(dialog.FileName))
+                    foreach (var row in workbook.Worksheets.First().RowsUsed().Skip(1))
+                    {
+                        string ma = ExcelImportReader.Text(row, 1);
+                        if (ma.Length == 0) continue;
+                        string ten = ExcelImportReader.Text(row, 2);
+                        string loai = ExcelImportReader.Text(row, 3);
+                        decimal giaTri = ExcelImportReader.Decimal(row, 4);
+                        decimal donToiThieu = ExcelImportReader.Decimal(row, 5);
+                        decimal? giamToiDa = ExcelImportReader.NullableDecimal(row, 6);
+                        DateTime batDau = ExcelImportReader.Date(row, 7);
+                        DateTime ketThuc = ExcelImportReader.Date(row, 8);
+                        int soLuong = ExcelImportReader.Integer(row, 9);
+                        string trangThai = ExcelImportReader.Text(row, 10);
+                        Database.Execute("INSERT INTO dbo.MaGiamGia (MaGiamGia, TenChuongTrinh, LoaiGiam, GiaTriGiam, DonToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, SoLuong, TrangThai) VALUES (@Ma, @Ten, @Loai, @GiaTri, @DonToiThieu, @GiamToiDa, @BatDau, @KetThuc, @SoLuong, @TrangThai)", p => { p.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma; p.Add("@Ten", SqlDbType.NVarChar, 200).Value = ten; p.Add("@Loai", SqlDbType.NVarChar, 20).Value = loai; p.Add("@GiaTri", SqlDbType.Decimal).Value = giaTri; p.Add("@DonToiThieu", SqlDbType.Decimal).Value = donToiThieu; p.Add("@GiamToiDa", SqlDbType.Decimal).Value = giamToiDa.HasValue ? (object)giamToiDa.Value : DBNull.Value; p.Add("@BatDau", SqlDbType.Date).Value = batDau; p.Add("@KetThuc", SqlDbType.Date).Value = ketThuc; p.Add("@SoLuong", SqlDbType.Int).Value = soLuong; p.Add("@TrangThai", SqlDbType.NVarChar, 30).Value = trangThai; });
+                        imported++;
+                    }
+                    TaiDanhSach();
+                    MessageBox.Show("Đã nhập " + imported + " mã giảm giá.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception error) { MessageBox.Show("Không thể nhập mã giảm giá: " + error.Message, "Lỗi nhập file", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            }
         }
 
         private void btnXuatExcel_Click(object sender, EventArgs e)

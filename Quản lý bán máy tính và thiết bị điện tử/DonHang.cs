@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Data;
+using System.Linq;
 using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
@@ -280,6 +281,35 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
             TimKiemDonHang();
+        }
+
+        private void btnNhapExcel_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Tệp Excel (*.xlsx)|*.xlsx", Title = "Nhập đơn hàng" })
+            {
+                if (dialog.ShowDialog() != DialogResult.OK) return;
+                try
+                {
+                    int imported = 0;
+                    using (var workbook = new XLWorkbook(dialog.FileName))
+                    foreach (var row in workbook.Worksheets.First().RowsUsed().Skip(1))
+                    {
+                        string ma = ExcelImportReader.Text(row, 1);
+                        if (ma.Length == 0) continue;
+                        string khach = ExcelImportReader.Text(row, 2);
+                        string sdt = ExcelImportReader.Text(row, 3);
+                        DateTime ngay = ExcelImportReader.Date(row, 4);
+                        decimal tong = ExcelImportReader.Decimal(row, 5);
+                        decimal giam = ExcelImportReader.Decimal(row, 6);
+                        string trangThai = ExcelImportReader.Text(row, 8);
+                        Database.Execute("INSERT INTO dbo.DonHang (MaDonHang, KhachHang, SoDienThoai, NgayDat, TongTien, GiamGia, TrangThai) VALUES (@Ma, @Khach, @Sdt, @Ngay, @Tong, @Giam, @TrangThai)", p => { p.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma; p.Add("@Khach", SqlDbType.NVarChar, 150).Value = khach; p.Add("@Sdt", SqlDbType.NVarChar, 20).Value = sdt.Length == 0 ? (object)DBNull.Value : sdt; p.Add("@Ngay", SqlDbType.Date).Value = ngay; p.Add("@Tong", SqlDbType.Decimal).Value = tong; p.Add("@Giam", SqlDbType.Decimal).Value = giam; p.Add("@TrangThai", SqlDbType.NVarChar, 30).Value = trangThai; });
+                        imported++;
+                    }
+                    TaiDanhSach();
+                    MessageBox.Show("Đã nhập " + imported + " đơn hàng.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception error) { MessageBox.Show("Không thể nhập đơn hàng: " + error.Message, "Lỗi nhập file", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            }
         }
 
         private void btnXuatExcel_Click(object sender, EventArgs e)

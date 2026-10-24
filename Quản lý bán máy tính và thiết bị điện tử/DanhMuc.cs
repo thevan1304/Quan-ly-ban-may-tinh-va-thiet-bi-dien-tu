@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Data;
+using System.Linq;
 using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
@@ -171,6 +172,34 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
             TimKiemDanhMuc();
+        }
+
+        private void btnNhapExcel_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Tệp Excel (*.xlsx)|*.xlsx", Title = "Nhập danh sách danh mục" })
+            {
+                if (dialog.ShowDialog() != DialogResult.OK) return;
+                try
+                {
+                    int imported = 0;
+                    using (var workbook = new XLWorkbook(dialog.FileName))
+                    {
+                        foreach (var row in workbook.Worksheets.First().RowsUsed().Skip(1))
+                        {
+                            string ma = ExcelImportReader.Text(row, 1);
+                            string ten = ExcelImportReader.Text(row, 2);
+                            if (ma.Length == 0 && ten.Length == 0) continue;
+                            if (ma.Length == 0 || ten.Length == 0) throw new FormatException("Mã và tên danh mục không được để trống.");
+                            string moTa = ExcelImportReader.Text(row, 3);
+                            Database.Execute("INSERT INTO dbo.DanhMuc (MaDanhMuc, TenDanhMuc, MoTa) VALUES (@Ma, @Ten, @MoTa)", p => { p.Add("@Ma", SqlDbType.NVarChar, 30).Value = ma; p.Add("@Ten", SqlDbType.NVarChar, 150).Value = ten; p.Add("@MoTa", SqlDbType.NVarChar, 500).Value = moTa.Length == 0 ? (object)DBNull.Value : moTa; });
+                            imported++;
+                        }
+                    }
+                    TaiDanhSach();
+                    MessageBox.Show("Đã nhập " + imported + " danh mục.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception error) { MessageBox.Show("Không thể nhập danh mục: " + error.Message, "Lỗi nhập file", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            }
         }
 
         private void TimKiemDanhMuc()

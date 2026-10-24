@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Data;
+using System.Linq;
 using ClosedXML.Excel;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
 
@@ -374,6 +375,35 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private void btnTimKiem_Click(object sender, EventArgs e)
         {
             TimKiemBaoHanh();
+        }
+
+        private void btnNhapExcel_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog { Filter = "Tệp Excel (*.xlsx)|*.xlsx", Title = "Nhập phiếu bảo hành" })
+            {
+                if (dialog.ShowDialog() != DialogResult.OK) return;
+                try
+                {
+                    int imported = 0;
+                    using (var workbook = new XLWorkbook(dialog.FileName))
+                    foreach (var row in workbook.Worksheets.First().RowsUsed().Skip(1))
+                    {
+                        string maPhieu = ExcelImportReader.Text(row, 1);
+                        if (maPhieu.Length == 0) continue;
+                        string maSanPham = ExcelImportReader.Text(row, 2);
+                        string khachHang = ExcelImportReader.Text(row, 3);
+                        string soDienThoai = ExcelImportReader.Text(row, 4);
+                        DateTime ngayMua = ExcelImportReader.Date(row, 5);
+                        int thoiHan = ExcelImportReader.Integer(row, 6);
+                        string ghiChu = string.Empty;
+                        Database.Execute("INSERT INTO dbo.BaoHanh (MaPhieu, MaSanPham, TenKhachHang, SoDienThoai, NgayMua, ThoiHan, GhiChu) VALUES (@Ma, @SP, @KH, @SDT, @Ngay, @Han, @GhiChu)", p => { p.Add("@Ma", SqlDbType.NVarChar, 30).Value = maPhieu; p.Add("@SP", SqlDbType.NVarChar, 30).Value = maSanPham; p.Add("@KH", SqlDbType.NVarChar, 150).Value = khachHang; p.Add("@SDT", SqlDbType.NVarChar, 20).Value = soDienThoai.Length == 0 ? (object)DBNull.Value : soDienThoai; p.Add("@Ngay", SqlDbType.Date).Value = ngayMua; p.Add("@Han", SqlDbType.Int).Value = thoiHan; p.Add("@GhiChu", SqlDbType.NVarChar, 500).Value = ghiChu.Length == 0 ? (object)DBNull.Value : ghiChu; });
+                        imported++;
+                    }
+                    TaiDanhSach();
+                    MessageBox.Show("Đã nhập " + imported + " phiếu bảo hành.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception error) { MessageBox.Show("Không thể nhập phiếu bảo hành: " + error.Message, "Lỗi nhập file", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            }
         }
 
         private void TimKiemBaoHanh()
