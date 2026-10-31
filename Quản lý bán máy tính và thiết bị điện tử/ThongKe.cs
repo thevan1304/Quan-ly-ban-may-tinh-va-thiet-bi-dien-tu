@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using ClosedXML.Excel;
 using System.Windows.Forms;
 using Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử.Data;
@@ -10,14 +11,84 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         public ThongKe()
         {
             InitializeComponent();
+            dtpTuNgay.Value = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            dtpDenNgay.Value = DateTime.Today;
+            Load += (sender, args) => ThucHienThongKe();
         }
 
         private void btnThongKe_Click(object sender, EventArgs e)
         {
+            ThucHienThongKe();
         }
 
         private void btnLamMoi_Click(object sender, EventArgs e)
         {
+            dtpTuNgay.Value = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            dtpDenNgay.Value = DateTime.Today;
+            dgvThongKe.Rows.Clear();
+            CapNhatTongHop(0, 0, 0, 0);
+            ThucHienThongKe();
+        }
+
+        private void ThucHienThongKe()
+        {
+            DateTime tuNgay = dtpTuNgay.Value.Date;
+            DateTime denNgay = dtpDenNgay.Value.Date;
+            if (tuNgay > denNgay)
+            {
+                MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc.", "Khoảng thời gian không hợp lệ",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                DataTable data = Database.Query(
+                    "SELECT Ngay, SoDon, HoanThanh, DaHuy, DoanhThu " +
+                    "FROM dbo.vwDoanhThuNgay " +
+                    "WHERE Ngay BETWEEN @TuNgay AND @DenNgay ORDER BY Ngay",
+                    parameters =>
+                    {
+                        parameters.Add("@TuNgay", SqlDbType.Date).Value = tuNgay;
+                        parameters.Add("@DenNgay", SqlDbType.Date).Value = denNgay;
+                    });
+
+                dgvThongKe.Rows.Clear();
+                int tongDon = 0;
+                int tongHoanThanh = 0;
+                int tongDaHuy = 0;
+                decimal tongDoanhThu = 0;
+
+                foreach (DataRow row in data.Rows)
+                {
+                    DateTime ngay = Convert.ToDateTime(row["Ngay"]).Date;
+                    int soDon = Convert.ToInt32(row["SoDon"]);
+                    int hoanThanh = Convert.ToInt32(row["HoanThanh"]);
+                    int daHuy = Convert.ToInt32(row["DaHuy"]);
+                    decimal doanhThu = row["DoanhThu"] == DBNull.Value ? 0 : Convert.ToDecimal(row["DoanhThu"]);
+
+                    dgvThongKe.Rows.Add(ngay, soDon, hoanThanh, daHuy, doanhThu);
+                    tongDon += soDon;
+                    tongHoanThanh += hoanThanh;
+                    tongDaHuy += daHuy;
+                    tongDoanhThu += doanhThu;
+                }
+
+                CapNhatTongHop(tongDoanhThu, tongDon, tongHoanThanh, tongDaHuy);
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tải thống kê: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void CapNhatTongHop(decimal tongDoanhThu, int tongDon, int tongHoanThanh, int tongDaHuy)
+        {
+            lblTongDoanhThu.Text = tongDoanhThu.ToString("N0") + " VNĐ";
+            lblTongDon.Text = tongDon.ToString("N0");
+            lblHoanThanh.Text = tongHoanThanh.ToString("N0");
+            lblDaHuy.Text = tongDaHuy.ToString("N0");
         }
         private void btnXuatExcel_Click(object sender, EventArgs e)
         {
