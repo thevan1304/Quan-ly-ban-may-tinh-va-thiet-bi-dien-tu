@@ -27,7 +27,6 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             btnXoa.Click += btnXoa_Click;
             btnLamMoi.Click += btnLamMoi_Click;
             btnXuatExcel.Click += btnXuatExcel_Click;
-            mnuNhapSanPham.Click += mnuNhapSanPham_Click;
             btnTimKiem.Click += btnTimKiem_Click;
             dgvSanPham.CellClick += dgvSanPham_CellClick;
             txtTimMa.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemSanPham(); };
