@@ -26,7 +26,11 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             txtTimMaPhieu.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemBaoHanh(); };
             txtTimMaSanPham.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemBaoHanh(); };
             txtTimKhachHang.KeyDown += (s, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Enter) TimKiemBaoHanh(); };
-            Load += (sender, args) => TaiDanhSach();
+            Load += (sender, args) =>
+            {
+                TaiDanhSachSanPham();
+                TaiDanhSach();
+            };
         }
 
         private void dgvBaoHanh_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -51,7 +55,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 DataRow row = result.Rows[0];
                 maPhieuDangSua = ma;
                 txtMaPhieu.Text = ma;
-                txtMaSanPham.Text = Convert.ToString(row["MaSanPham"]);
+                cboMaSanPham.SelectedValue = Convert.ToString(row["MaSanPham"]);
                 txtTenKhachHang.Text = Convert.ToString(row["TenKhachHang"]);
                 txtSoDienThoai.Text = Convert.ToString(row["SoDienThoai"]);
                 dtpNgayMua.Value = ((DateTime)row["NgayMua"]).Date;
@@ -74,13 +78,19 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 return;
             }
 
-            string maPhieu, maSanPham, khachHang, soDienThoai, ghiChu;
+            string maPhieu, khachHang, soDienThoai, ghiChu;
             if (!InputValidation.Required(txtMaPhieu, "mã phiếu", 30, out maPhieu)
-                || !InputValidation.Required(txtMaSanPham, "mã sản phẩm", 30, out maSanPham)
                 || !InputValidation.Required(txtTenKhachHang, "tên khách hàng", 150, out khachHang)
                 || !InputValidation.Optional(txtSoDienThoai, "số điện thoại", 20, out soDienThoai)
                 || !InputValidation.Optional(txtGhiChu, "ghi chú", 500, out ghiChu))
                 return;
+
+            string maSanPham = cboMaSanPham.SelectedValue as string;
+            if (string.IsNullOrEmpty(maSanPham))
+            {
+                InputValidation.Invalid(cboMaSanPham, "Vui lòng chọn sản phẩm.");
+                return;
+            }
 
             DateTime ngayMua = dtpNgayMua.Value.Date;
             int thoiHan = (int)numThoiHan.Value;
@@ -114,7 +124,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
 
             txtMaPhieu.Clear();
-            txtMaSanPham.Clear();
+            cboMaSanPham.SelectedIndex = -1;
             txtTenKhachHang.Clear();
             txtSoDienThoai.Clear();
             txtGhiChu.Clear();
@@ -151,6 +161,28 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             }
         }
 
+        private void TaiDanhSachSanPham()
+        {
+            try
+            {
+                DataTable products = Database.Query(
+                    "SELECT MaSanPham, TenSanPham FROM dbo.SanPham ORDER BY MaSanPham");
+                products.Columns.Add("HienThi", typeof(string));
+                foreach (DataRow row in products.Rows)
+                    row["HienThi"] = Convert.ToString(row["MaSanPham"]) + " - " + Convert.ToString(row["TenSanPham"]);
+
+                cboMaSanPham.DisplayMember = "HienThi";
+                cboMaSanPham.ValueMember = "MaSanPham";
+                cboMaSanPham.DataSource = products;
+                cboMaSanPham.SelectedIndex = -1;
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Không thể tải danh sách sản phẩm: " + error.Message, "Lỗi dữ liệu",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void btnSua_Click(object sender, EventArgs e)
         {
             if (maPhieuDangSua == null)
@@ -158,9 +190,8 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
                 return;
             }
 
-            string maSanPham, khachHang, soDienThoai, ghiChu;
-            if (!InputValidation.Required(txtMaSanPham, "mã sản phẩm", 30, out maSanPham)
-                || !InputValidation.Required(txtTenKhachHang, "tên khách hàng", 150, out khachHang)
+            string khachHang, soDienThoai, ghiChu;
+            if (!InputValidation.Required(txtTenKhachHang, "tên khách hàng", 150, out khachHang)
                 || !InputValidation.Optional(txtSoDienThoai, "số điện thoại", 20, out soDienThoai)
                 || !InputValidation.Optional(txtGhiChu, "ghi chú", 500, out ghiChu))
                 return;
@@ -168,6 +199,12 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             DateTime ngayMua = dtpNgayMua.Value.Date;
             int thoiHan = (int)numThoiHan.Value;
             DateTime ngayHetHan = ngayMua.AddMonths(thoiHan);
+            string maSanPham = cboMaSanPham.SelectedValue as string;
+            if (string.IsNullOrEmpty(maSanPham))
+            {
+                InputValidation.Invalid(cboMaSanPham, "Vui lòng chọn sản phẩm.");
+                return;
+            }
             int updated;
             try
             {
@@ -360,7 +397,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             maPhieuDangSua = null;
             txtMaPhieu.ReadOnly = false;
             txtMaPhieu.Clear();
-            txtMaSanPham.Clear();
+            cboMaSanPham.SelectedIndex = -1;
             txtTenKhachHang.Clear();
             txtSoDienThoai.Clear();
             dtpNgayMua.Value = DateTime.Today;

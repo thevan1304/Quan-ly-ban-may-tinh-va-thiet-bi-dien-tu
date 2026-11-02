@@ -30,7 +30,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.lblMaPhieu = new System.Windows.Forms.Label();
             this.txtMaPhieu = new System.Windows.Forms.TextBox();
             this.lblMaSanPham = new System.Windows.Forms.Label();
-            this.txtMaSanPham = new System.Windows.Forms.TextBox();
+            this.cboMaSanPham = new System.Windows.Forms.ComboBox();
             this.lblTenKhachHang = new System.Windows.Forms.Label();
             this.txtTenKhachHang = new System.Windows.Forms.TextBox();
             this.lblSoDienThoai = new System.Windows.Forms.Label();
@@ -185,7 +185,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.grpThongTin.Controls.Add(this.lblMaPhieu);
             this.grpThongTin.Controls.Add(this.txtMaPhieu);
             this.grpThongTin.Controls.Add(this.lblMaSanPham);
-            this.grpThongTin.Controls.Add(this.txtMaSanPham);
+            this.grpThongTin.Controls.Add(this.cboMaSanPham);
             this.grpThongTin.Controls.Add(this.lblTenKhachHang);
             this.grpThongTin.Controls.Add(this.txtTenKhachHang);
             this.grpThongTin.Controls.Add(this.lblSoDienThoai);
@@ -239,13 +239,15 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
             this.lblMaSanPham.TabIndex = 2;
             this.lblMaSanPham.Text = "Mã sản phẩm:";
             //
-            // txtMaSanPham
+            // cboMaSanPham
             //
-            this.txtMaSanPham.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtMaSanPham.Location = new System.Drawing.Point(700, 34);
-            this.txtMaSanPham.Name = "txtMaSanPham";
-            this.txtMaSanPham.Size = new System.Drawing.Size(390, 30);
-            this.txtMaSanPham.TabIndex = 3;
+            this.cboMaSanPham.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboMaSanPham.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.cboMaSanPham.FormattingEnabled = true;
+            this.cboMaSanPham.Location = new System.Drawing.Point(700, 34);
+            this.cboMaSanPham.Name = "cboMaSanPham";
+            this.cboMaSanPham.Size = new System.Drawing.Size(390, 31);
+            this.cboMaSanPham.TabIndex = 3;
             //
             // lblTenKhachHang
             //
@@ -747,7 +749,7 @@ namespace Quản_lý_bán_máy_tính_và_thiết_bị_điện_tử
         private System.Windows.Forms.TextBox txtMaPhieu;
 
         private System.Windows.Forms.Label lblMaSanPham;
-        private System.Windows.Forms.TextBox txtMaSanPham;
+        private System.Windows.Forms.ComboBox cboMaSanPham;
 
         private System.Windows.Forms.Label lblTenKhachHang;
         private System.Windows.Forms.TextBox txtTenKhachHang;
